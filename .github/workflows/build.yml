@@ -1,0 +1,43 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+  # Allow to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python 3.8
+        uses: actions/setup-python@master
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python --version
+          pip install -U pip
+          pip install coverage
+          sudo apt-get update -y
+          sudo apt-get install -y mpich
+          sudo apt install libopenmpi-dev
+          pip install mpi4py
+          pip install pylint
+          pip install .
+      - name: Run pylint
+        run: |
+          pylint pycharge
+          pylint examples
+          pylint tests
+      - name: Run tests
+        run: coverage run -m unittest discover tests
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true

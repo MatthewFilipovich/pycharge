@@ -1,0 +1,8 @@
+[MASTER]
+
+disable=invalid-name,
+        too-many-arguments,
+        too-many-instance-attributes,
+        c-extension-no-member,
+        too-many-locals,
+        R0801

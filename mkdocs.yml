@@ -1,0 +1,58 @@
+site_name: PyCharge Documentation
+nav:
+  - Home: "index.md"
+  - Getting Started:
+      - "Introduction": "getting_started/introduction.md"
+      - "Installation": "getting_started/installation.md"
+      - "Stationary Charge Fields": "getting_started/stationary_charge.md"
+      - "Oscillating Charge Fields": "getting_started/oscillating_charge.md"
+      - "Dipole Simulation": "getting_started/dipoles.md"
+
+  - How-To Guides:
+      - "Create Custom Charge": "none.md"
+      - "Simulate Currents": "none.md"
+      - "Simulate Moving Dipoles": "none.md"
+      - "Simulate Coupled Dipoles": "none.md"
+      - "Simulate Dipole Chains": "none.md"
+      - "Calculate the Poynting Vector": "none.md"
+      - "Create Animations": "none.md"
+      - "MPI Implementation": "none.md"
+      - "HPC Cluster Jobs": "none.md"
+
+  - API Reference:
+      - UML Diagram: api_reference/uml_diagram.md
+      - charges: api_reference/charges-reference.md
+      - dipole: api_reference/dipole-reference.md
+      - simulation: api_reference/simulation-reference.md
+      - dipole_analyses: api_reference/dipole_analyses-reference.md
+  - Background Information:
+      - Point Charges: "background_information/point_charges.md"
+      - Lorentz Oscillators: "background_information/lorentz_oscillators.md"
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+
+plugins:
+  - search
+  - mkdocstrings
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - footnotes
+  - attr_list
+
+extra_javascript: [
+    "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML",
+  ] # AMSmath support

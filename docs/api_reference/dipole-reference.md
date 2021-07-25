@@ -1,0 +1,3 @@
+# dipole module
+
+::: pycharge.dipole
