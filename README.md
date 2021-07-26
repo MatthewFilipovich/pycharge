@@ -30,7 +30,7 @@ See the manual hosted at [pycharge.readthedocs.io](https://pycharge.readthedocs.
 
 ## Installation
 
-PyCharge and its dependencies can be installed using [pip](https://pip.pypa.io/en/stable/):
+PyCharge and its dependencies can be installed using [pip](https://pypi.org/project/pycharge/):
 
 ```sh
 pip install pycharge
@@ -102,7 +102,7 @@ TODO
 
 ## License
 
-Pycharge is distributed under the GNU GPLv3. See [LICENSE](https://github.com/MatthewFilipovich/pycharge/blob/master/LICENSE) for more information.
+PyCharge is distributed under the GNU GPLv3. See [LICENSE](https://github.com/MatthewFilipovich/pycharge/blob/master/LICENSE) for more information.
 
 ## Acknowledgements
 

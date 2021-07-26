@@ -79,7 +79,7 @@ TODO
 
 ## License
 
-Pycharge is distributed under the GNU GPLv3. See [LICENSE](https://github.com/MatthewFilipovich/pycharge/blob/master/LICENSE) for more information.
+PyCharge is distributed under the GNU GPLv3. See [LICENSE](https://github.com/MatthewFilipovich/pycharge/blob/master/LICENSE) for more information.
 
 ## Acknowledgements
 
