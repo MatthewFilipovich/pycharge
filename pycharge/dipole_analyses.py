@@ -73,7 +73,7 @@ def calculate_dipole_properties(
 
 
 def p_dipole_theory(
-    d: float,
+    r: float,
     d_12: float,
     omega_0: float,
     print_values: bool = False
@@ -84,7 +84,7 @@ def p_dipole_theory(
     gamma_0. Both dipoles must have identical initial dipole moments.
 
     Args:
-        d: Distance between two charges in dipole.
+        r: Distance between two charges in dipole.
         d_12: Distance between two dipoles.
         omega_0: Natural angular frequency of dipole.
         print_values: Prints \delta_12 and \gamma_12 if `True`.
@@ -101,10 +101,10 @@ def p_dipole_theory(
     G12pp = (G12ss + k0**2*np.exp(1j*k0*d_12)/(4*np.pi*d_12)
              * (-1-3j/(k0*d_12)*1+3/(k0*d_12)**2))
     G11 = 1j*omega_0**3/(6*np.pi*c**3)*np.sqrt(eps)
-    gamma_0 = 2*d**2/(eps_0*hbar)*np.imag(G11)
+    gamma_0 = 2*r**2/(eps_0*hbar)*np.imag(G11)
 
-    delta_12p = -d**2/(eps_0*hbar)*np.real(G12pp)/gamma_0
-    gamma12p = 2*d**2/(eps_0*hbar)*np.imag(G12pp)/gamma_0
+    delta_12p = -r**2/(eps_0*hbar)*np.real(G12pp)/gamma_0
+    gamma12p = 2*r**2/(eps_0*hbar)*np.imag(G12pp)/gamma_0
     if print_values:
         print('Separation (lambda_0): ', d_12/lambda0)
         print('delta_12 p: ', delta_12p)
@@ -113,7 +113,7 @@ def p_dipole_theory(
 
 
 def s_dipole_theory(
-    d: float,
+    r: float,
     d_12: float,
     omega_0: float,
     print_values: bool = False
@@ -124,7 +124,7 @@ def s_dipole_theory(
     gamma_0. Both dipoles must have identical initial dipole moments.
 
     Args:
-        d: Distance between two charges in dipole.
+        r: Distance between two charges in dipole.
         d_12: Distance between two dipoles.
         omega_0: Natural angular frequency of dipole.
         print_values: Prints \delta_12 and \gamma_12 if `True`.
@@ -139,10 +139,10 @@ def s_dipole_theory(
     G12ss = (k0**2*np.exp(1j*k0*d_12)/(4*np.pi*d_12)
              * (1+1j/(k0*d_12)*1-1/(k0*d_12)**2))
     G11 = 1j*omega_0**3/(6*np.pi*c**3)*np.sqrt(eps)
-    gamma_0 = 2*d**2/(eps_0*hbar)*np.imag(G11)
+    gamma_0 = 2*r**2/(eps_0*hbar)*np.imag(G11)
 
-    delta_12s = -d**2/(eps_0*hbar)*np.real(G12ss)/gamma_0
-    gamma12s = 2*d**2/(eps_0*hbar)*np.imag(G12ss)/gamma_0
+    delta_12s = -r**2/(eps_0*hbar)*np.real(G12ss)/gamma_0
+    gamma12s = 2*r**2/(eps_0*hbar)*np.imag(G12ss)/gamma_0
     if print_values:
         print('Separation (lambda_0): ', d_12/lambda0)
         print('delta_12 s: ', delta_12s)
