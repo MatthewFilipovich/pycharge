@@ -341,3 +341,19 @@ class Dipole():
             ret_arr = (array[t_min+1]-array[t_min])*(t-t_min) + array[t_min]
             ret_arr[t < 0] = array[0]  # Dipole is stationary for t<0
             return ret_arr
+
+        def solve_time(
+            self, tr: ndarray, t: ndarray, x: ndarray, y: ndarray, z: ndarray
+        ) -> ndarray:
+            """Return equation to solve for the retarded time of the charge.
+
+            Since the position of the dipole's charges are determined 
+            dynamically at each time step, this method returns inf if the guess
+            by Newton's method is larger than t."""
+            tr_larger = tr >= t  # tr must be smaller than t
+            tr[tr_larger] = 0  # Avoids pos methods from failing
+            # Griffiths Eq. 10.55
+            root_equation = ((x-self.xpos(tr))**2 + (y-self.ypos(tr))**2
+                             + (z-self.zpos(tr))**2)**0.5 - c*(t-tr)
+            root_equation[tr_larger] = np.inf  # Safety for Newton's method
+            return root_equation

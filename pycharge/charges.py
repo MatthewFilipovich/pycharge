@@ -149,13 +149,9 @@ class Charge(ABC):
         self, tr: ndarray, t: ndarray, x: ndarray, y: ndarray, z: ndarray
     ) -> ndarray:
         """Return equation to solve for the retarded time of the charge."""
-        tr_larger = tr >= t  # tr must be smaller than t
-        tr[tr_larger] = 0  # Avoids pos methods from failing
         # Griffiths Eq. 10.55
-        root_equation = ((x-self.xpos(tr))**2 + (y-self.ypos(tr))**2
-                         + (z-self.zpos(tr))**2)**0.5 - c*(t-tr)
-        root_equation[tr_larger] = np.inf  # Safety for Newton's method
-        return root_equation
+        return ((x-self.xpos(tr))**2 + (y-self.ypos(tr))**2
+                + (z-self.zpos(tr))**2)**0.5 - c*(t-tr)
 
 
 class StationaryCharge(Charge):
