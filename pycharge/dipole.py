@@ -347,7 +347,7 @@ class Dipole():
         ) -> ndarray:
             """Return equation to solve for the retarded time of the charge.
 
-            Since the position of the dipole's charges are determined 
+            Since the position of the dipole's charges are determined
             dynamically at each time step, this method returns inf if the guess
             by Newton's method is larger than t."""
             tr_larger = tr >= t  # tr must be smaller than t
