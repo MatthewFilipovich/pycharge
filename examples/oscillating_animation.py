@@ -51,7 +51,7 @@ pos = ax.scatter(charge.xpos(0), 0, s=5, c='red', marker='o')
 
 
 def _update_animation(frame):
-    text = "\rProcessing frame {0}/{1}.".format(frame+1, n_frames)
+    text = f"\rProcessing frame {frame+1}/{n_frames}."
     sys.stdout.write(text)
     sys.stdout.flush()
     t = frame*dt
