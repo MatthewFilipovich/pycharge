@@ -21,13 +21,13 @@ All units are in SI.
 """
 from __future__ import annotations
 
-from time import time
 from typing import Any, Optional, Sequence, Tuple, Union
 
 import dill as pickle
 import numpy as np
 from numpy import ndarray
 from scipy import constants, optimize
+from tqdm import tqdm
 
 from .charges import Charge
 from .dipole import Dipole
@@ -335,7 +335,7 @@ class Simulation():
         file: Optional[str] = None,
         save_E: bool = False,
         max_vel: float = c/100,
-        timer: bool = False
+        progressbar: bool = True
     ) -> None:
         """Run simulation with `Dipole` and `Charge` object(s).
 
@@ -353,8 +353,7 @@ class Simulation():
                 and memory. Defaults to `True`.
             max_vel: The maximum possible velocity achieved by the two point
                 charges in `Dipole` object. Defaults to `c/100`.
-            timer: Prints the time taken to run the simulation if True.
-                Defaults to `False`.
+            progressbar: Prints the progressbar if `True`. Defaults to `True`.
 
         Raises:
             ValueError: Raised if the point charge's velocity in the `Dipole`
@@ -363,14 +362,12 @@ class Simulation():
         self._init_simulation(timesteps, dt, save_E)
         if file is not None and self._load(file):
             return
-        start_t = time()
-        for tstep in range(self.timesteps-1):
+        for tstep in tqdm(range(self.timesteps-1), total=self.timesteps,
+                          initial=1, mininterval=0.5, disable=not progressbar):
             for dipole in self.dipoles:
                 moment_disp, moment_vel = self._rk4(tstep, dipole)
                 self._update_dipole(tstep, dipole, moment_disp, moment_vel,
                                     max_vel)
-        if timer:
-            print('Time to run simulation (s): ', time()-start_t)
         if file is not None:
             self._save(file)
 
@@ -381,7 +378,7 @@ class Simulation():
         file: Optional[str] = None,
         save_E: bool = False,
         max_vel: float = c/100,
-        timer: bool = False
+        progressbar: bool = True
     ) -> None:
         """Run simulation with `Dipole` and `Charge` object(s) using MPI.
 
@@ -403,8 +400,7 @@ class Simulation():
                 and memory. Defaults to `True`.
             max_vel: The maximum possible velocity achieved by the two point
                 charges in `Dipole` object. Defaults to `c/100`.
-            timer: Prints the time taken to run the simulation if True.
-                Defaults to `False`.
+            progressbar: Prints the progressbar if `True`. Defaults to `True`.
 
         Raises:
             NotImplementedError: Raised if `mpi4py` package is not installed.
@@ -427,8 +423,9 @@ class Simulation():
         mpi_size = mpi_comm.Get_size()  # Number of MPI processes
         mpi_rank = mpi_comm.Get_rank()  # Rank of current MPI process
         process_dipoles = self.dipoles[mpi_rank::mpi_size]  # Dipoles evaluated
-        start_t = time()
-        for tstep in range(self.timesteps-1):
+        disable_bar = not progressbar or mpi_rank != 0
+        for tstep in tqdm(range(self.timesteps-1), total=self.timesteps,
+                          initial=1, mininterval=0.5, disable=disable_bar):
             moment_data = []
             for dipole in process_dipoles:  # Only evaluate `process_dipoles`
                 moment_disp, moment_vel = self._rk4(tstep, dipole)
@@ -446,8 +443,6 @@ class Simulation():
                                             bcast_data):
                         self._update_dipole(tstep, dipole, data[0], data[1],
                                             max_vel)
-        if timer and mpi_rank == 0:
-            print('Time to run simulation (s): ', time()-start_t)
         if mpi_rank == 0 and file is not None:
             self._save(file)
 

@@ -31,7 +31,8 @@ setuptools.setup(
         'numpy',
         'dill',
         'scipy',
-        'matplotlib'
+        'matplotlib',
+        'tqdm'
     ],
     extras_require={"MPI":  ['mpi4py']}
 )

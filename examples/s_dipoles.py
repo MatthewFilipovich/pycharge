@@ -21,7 +21,7 @@ sources = (pc.Dipole(omega_0, origin_list[0], init_r_list[0]),
            pc.Dipole(omega_0, origin_list[1], init_r_list[1]))
 simulation = pc.Simulation(sources)
 # Simulation data of dipoles is saved to file 's_dipoles.dat'
-simulation.run(timesteps, dt, 's_dipoles.dat', timer=True)
+simulation.run(timesteps, dt, 's_dipoles.dat')
 
 # Calculate theoretical \delta and \gamma_12
 theory_delta_12, theory_gamma_12 = pc.s_dipole_theory(init_r, d_12, omega_0)

@@ -190,7 +190,7 @@ class Test(unittest.TestCase):
     def test_dipole_properties_vacuum(self):
         dipole1 = Dipole(100e12*2*np.pi, (0, 0, 0), (1e-9, 0, 0))
         simulation1 = Simulation(dipole1)
-        simulation1.run(5000, 1e-18, save_E=True, timer=True)
+        simulation1.run(5000, 1e-18, save_E=True)
         # Calculate theoretical \delta_12 and \gamma_12
         delta_12, gamma = pc.calculate_dipole_properties(dipole1, 0)
         np.testing.assert_almost_equal(gamma, 1, 5)
