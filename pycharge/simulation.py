@@ -55,15 +55,16 @@ class Simulation():
     Args:
         sources (Union[Sequence, Union[Charge, Dipole]]): Either a single or
             list of `Dipole` and `Charge` object(s) in the simulation.
-        h (float): Tolerance for Newton's method. Defaults to `1e-22`.
+        tol (float): Tolerance for the scipy.optimize.newton method.
+            Default is `1e-22`.
     """
 
     def __init__(
         self,
         sources: Union[Sequence, Union[Charge, Dipole]],
-        h: float = 1e-22
+        tol: float = 1e-22
     ) -> None:
-        self.h = h
+        self.tol = tol
         self.all_charges = []  # List of all `Charge` objects
         self.dipoles = []  # List of `Dipole` objects
         if not isinstance(sources, Sequence):
@@ -141,7 +142,7 @@ class Simulation():
                 continue
             initial_guess = -1e-12*np.ones((x.shape))
             tr = optimize.newton(charge.solve_time, initial_guess,
-                                 args=(t_array, x, y, z), tol=self.h)
+                                 args=(t_array, x, y, z), tol=self.tol)
             E_field = self._calculate_individual_E(
                 charge, tr, x, y, z, pcharge_field)
             E_x += E_field[0]
@@ -183,7 +184,7 @@ class Simulation():
                 continue
             initial_guess = -1e-12*np.ones((x.shape))
             tr = optimize.newton(charge.solve_time, initial_guess,
-                                 args=(t_array, x, y, z), tol=self.h)
+                                 args=(t_array, x, y, z), tol=self.tol)
             E_x, E_y, E_z = self._calculate_individual_E(
                 charge, tr, x, y, z, pcharge_field)
             rx = x - charge.xpos(tr)
@@ -224,7 +225,7 @@ class Simulation():
                 continue
             initial_guess = -1e-12*np.ones((x.shape))
             tr = optimize.newton(charge.solve_time, initial_guess,
-                                 args=(t_array, x, y, z), tol=self.h)
+                                 args=(t_array, x, y, z), tol=self.tol)
             rx = x - charge.xpos(tr)
             ry = y - charge.ypos(tr)
             rz = z - charge.zpos(tr)
@@ -268,7 +269,7 @@ class Simulation():
                 continue
             initial_guess = -1e-12*np.ones((x.shape))
             tr = optimize.newton(charge.solve_time, initial_guess,
-                                 args=(t_array, x, y, z), tol=self.h)
+                                 args=(t_array, x, y, z), tol=self.tol)
             rx = x - charge.xpos(tr)
             ry = y - charge.ypos(tr)
             rz = z - charge.zpos(tr)
