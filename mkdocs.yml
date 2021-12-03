@@ -9,18 +9,14 @@ nav:
       - "Dipole Simulation": "getting_started/dipoles.md"
 
   - How-To Guides:
-      - "Create Custom Charge": "none.md"
-      - "Simulate Currents": "none.md"
-      - "Simulate Moving Dipoles": "none.md"
-      - "Simulate Coupled Dipoles": "none.md"
-      - "Simulate Dipole Chains": "none.md"
-      - "Calculate the Poynting Vector": "none.md"
-      - "Create Animations": "none.md"
-      - "MPI Implementation": "none.md"
-      - "HPC Cluster Jobs": "none.md"
+      - "Create Custom Charge": "howto/custom_charges.md"
+      - "Calculate the Poynting Vector": "howto/pointing.md"
+      - "Simulate Moving Dipoles": "howto/moving_dipoles.md"
+      - "Simulate Coupled Dipoles": "howto/coupled_dipoles.md"
+      - "Create Animations": "howto/animations.md"
+      - "Executing MPI Simulations": "howto/mpi.md"
 
   - API Reference:
-      - UML Diagram: api_reference/uml_diagram.md
       - charges: api_reference/charges-reference.md
       - dipole: api_reference/dipole-reference.md
       - simulation: api_reference/simulation-reference.md
@@ -28,6 +24,7 @@ nav:
   - Background Information:
       - Point Charges: "background_information/point_charges.md"
       - Lorentz Oscillators: "background_information/lorentz_oscillators.md"
+      - Coupled Lorentz Oscillators: "background_information/coupled_LOs.md"
 
 theme:
   name: material

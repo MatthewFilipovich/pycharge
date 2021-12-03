@@ -41,7 +41,7 @@ class Dipole():
 
     The Lorentz oscillator equation of motion is given by (Novotny Eq. 8.135):
 
-    $\mu''(t) + \gamma_0*\mu'(t) + \omega_0^2*\mu'(t) = E_d(t)*q^2/m_{eff}$
+    $d''(t) + \gamma_0*d'(t) + \omega_0^2*d(t) = E_d(t)*q^2/m_{eff}$
 
     where $E_d(t)$ is the driving electric field (i.e. the component of the
     external electric field along the dipole's axis of polarization).

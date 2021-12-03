@@ -9,18 +9,6 @@ from matplotlib.animation import FuncAnimation
 
 import pycharge as pc
 
-width = 6
-tex_fonts = {
-    "text.usetex": True,
-    "font.family": "serif",
-    "axes.labelsize": 10,
-    "font.size": 10,
-    "legend.fontsize": 8,
-    "xtick.labelsize": 8,
-    "ytick.labelsize": 8
-}
-plt.rcParams.update(tex_fonts)
-
 lim = 50e-9
 grid_size = 1000
 x, y, z = np.meshgrid(np.linspace(-lim, lim, grid_size), 0,
@@ -30,7 +18,8 @@ charge = pc.OscillatingCharge(origin=(0, 0, 0), direction=(1, 0, 0),
                               amplitude=2e-9, omega=7.49e+16)
 simulation = pc.Simulation(charge)
 
-fig, ax = plt.subplots(figsize=(width*0.7, width*0.7))
+fig, ax = plt.subplots(figsize=(5, 5))
+ax.set_position([0, 0, 1, 1])
 # Initialie im plot
 im = ax.imshow(np.zeros((grid_size, grid_size)), origin='lower',
                extent=[-lim, lim, -lim, lim], vmax=7)

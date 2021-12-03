@@ -4,9 +4,9 @@ In the last section, we calculated the fields and potentials in 3D space generat
 
 The two opposite (positive and negative) charges in the `Dipole` object do not have predefined trajectories, since the dipole's moment is dependent on the external electric field that acts as a driving force. The dipole moment is defined by the driven oscillator differential equation, which is solved dynamically in PyCharge at each time step. For more information about `Dipole` objects and how they are simulated in PyCharge, see the [Lorentz Oscillators](../background_information/lorentz_oscillators.md) section.
 
-Here, we provide a script (found at [examples/s_dipoles.py](https://github.com/MatthewFilipovich/pycharge/blob/master/examples/s_dipoles.py)) for simulating two transverse dipoles (s-dipoles) that act as Lorentz oscillators. We run the simulation over 20,000 time steps and then analyze the dipole moment as a function of time to determine the new decay rate ($\gamma$) and frequency shift ($\delta_{12}$). We then compare these results to the theoretical Green's function values.
+Here, we provide a script (found at [examples/s_dipoles.py](https://github.com/MatthewFilipovich/pycharge/blob/master/examples/s_dipoles.py)) for simulating two transverse dipoles (s-dipoles) that act as Lorentz oscillators. We run the simulation over 40,000 time steps and then analyze the dipole moment as a function of time to determine the new decay rate ($\gamma$) and frequency shift ($\delta_{12}$). We then compare these results to the theoretical Green's function values.
 
-First, we import the necessary Python packages and define the simulation variables. The two dipoles are separated by 80 nm along the $x$-axis and are both polarized in the $y$ direction with an initial charge separation of 1 nm. Each point charge is instantiated with the default values for the charge (`e`) and mass (`m_e`). Note that the effective mass of the dipole is `m_e/2`, as discussed in the [Lorentz Oscillators](../background_information/lorentz_oscillators.md) section. The simulation is run over 20,000 time steps and uses a time step of `1e-18`:
+First, we import the necessary Python packages and define the simulation variables. The two dipoles are separated by 80 nm along the $x$-axis and are both polarized in the $y$ direction with an initial charge separation of 1 nm. Each point charge is instantiated with the default values for the charge (`e`) and mass (`m_e`). Note that the effective mass of the dipole is `m_e/2`, as discussed in the [Lorentz Oscillators](../background_information/lorentz_oscillators.md) section. The simulation is run over 40,000 time steps and uses a time step of `1e-18`:
 
 ```python
 import numpy as np
@@ -26,11 +26,11 @@ sources = (pc.Dipole(omega_0, origin_list[0], init_r_list[0]),
 simulation = pc.Simulation(sources)
 ```
 
-Finally, we run the simulation. The dipole moment, as well as the electric driving fields, are saved to the `Dipole` object at each time step. When the simulation is completed, the `Simulation` object (which includes the `Dipole` objects) is saved to the file `s_dipoles.dat`. We then compute the theoretical decay rate and frequency shift of the dipoles from the Green's function using the `s_dipole_theory` method. We then calculate these properties from the kinetic energy of the dipole using the `calculate_dipole_properties` method, which also plots the actual kinetic energy and the estimated function fit:
+Next, we run the simulation. The dipole moment, as well as the electric driving fields, are saved to the `Dipole` object at each time step. When the simulation is completed, the `Simulation` object (which includes the `Dipole` objects) is saved to the file `s_dipoles.dat`. We then compute the theoretical decay rate and frequency shift of the dipoles from the Green's function using the `s_dipole_theory` method. Finally, we calculate these properties from the kinetic energy of the dipole using the `calculate_dipole_properties` method, which also plots the actual kinetic energy and the estimated function fit:
 
 ```python
 # Simulation data of dipoles is saved to file 's_dipoles.dat'
-simulation.run(timesteps, dt, 's_dipoles.dat', timer=True)
+simulation.run(timesteps, dt, 's_dipoles.dat')
 
 # Calculate theoretical \delta and \gamma_12
 theory_delta_12, theory_gamma_12 = pc.s_dipole_theory(init_r, d_12, omega_0)
