@@ -92,13 +92,13 @@ fig, axs = plt.subplots(2, sharex=True)
 plt.subplots_adjust(hspace=0)
 
 axs[0].plot(d12_sweep/lambda_0, deltas_p,
-            color='#1f77b4', label='P Dipoles', zorder=8)
+            color='#1f77b4', label='P Dipoles', zorder=1)
 axs[0].plot(d12_sweep/lambda_0, deltas_s,
-            color='#ff7f0e', label='S Dipoles', zorder=7)
+            color='#ff7f0e', label='S Dipoles', zorder=0)
 axs[0].plot(d12_sweep/lambda_0, deltas_p_theory, '--',
-            color='#d62728', label='Th. P Dipoles', zorder=8)
+            color='#d62728', label='Th. P Dipoles', zorder=1)
 axs[0].plot(d12_sweep/lambda_0, deltas_s_theory,  '--',
-            color='#2ca02c', label='Th. S Dipoles', zorder=7)
+            color='#2ca02c', label='Th. S Dipoles', zorder=0)
 axs[0].set_yscale('symlog', linthresh=0.1)
 axs[0].set_ylabel(r'$\delta_{12}$ ($\gamma_0$)')
 axs[0].set_ylim(-3e3, 3e3)
@@ -112,12 +112,12 @@ axs[0].set_yticks(
 axs[0].legend(handlelength=1.7, loc='upper center', bbox_to_anchor=(0.5, 1.4),
               ncol=2)
 
-axs[1].plot(d12_sweep/lambda_0, gammas_p, color='#1f77b4', zorder=8)
-axs[1].plot(d12_sweep/lambda_0, gammas_s, color='#ff7f0e', zorder=7)
+axs[1].plot(d12_sweep/lambda_0, gammas_p, color='#1f77b4', zorder=1)
+axs[1].plot(d12_sweep/lambda_0, gammas_s, color='#ff7f0e', zorder=0)
 axs[1].plot(d12_sweep/lambda_0, gammas_p_theory, '--',
-            color='#d62728', zorder=8)
+            color='#d62728', zorder=1)
 axs[1].plot(d12_sweep/lambda_0,  gammas_s_theory, '--',
-            color='#2ca02c', zorder=7)
+            color='#2ca02c', zorder=0)
 axs[1].set_xlabel(r'Separation ($\lambda_0$)')
 axs[1].set_ylabel(r'$\gamma^+$ ($\gamma_0$)')
 axs[1].set_xlim(0, max(d12_sweep/lambda_0))
