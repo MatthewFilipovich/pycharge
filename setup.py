@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/MatthewFilipovich/pycharge",
     project_urls={
-        "Documentation" : "https://pycharge.readthedocs.io/",
+        "Documentation": "https://pycharge.readthedocs.io/",
         "Bug Tracker": "https://github.com/MatthewFilipovich/pycharge/issues",
     },
     classifiers=[

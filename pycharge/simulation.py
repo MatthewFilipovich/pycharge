@@ -99,9 +99,13 @@ class Simulation():
                 while self != loaded_simulation:
                     loaded_simulation = pickle.load(f)
                 # pylint: disable=E1101
-                for dipole, loaded_dipole in zip(self.dipoles,
-                                                 loaded_simulation.dipoles):
-                    dipole.__dict__ = loaded_dipole.__dict__
+                for dipole, l_dipole in zip(self.dipoles,
+                                            loaded_simulation.dipoles):
+                    l_dipole_dict = l_dipole.__dict__
+                    l_charge_pair = l_dipole_dict.pop('charge_pair')
+                    dipole.__dict__.update(l_dipole_dict)
+                    dipole.charge_pair[0].__dict__ = l_charge_pair[0].__dict__
+                    dipole.charge_pair[1].__dict__ = l_charge_pair[1].__dict__
                 return True
         except (FileNotFoundError, EOFError):
             return False
