@@ -9,11 +9,13 @@ from .simulation import *
 def cite():
     """Print BibTeX citation for the `pycharge` package."""
     citation = """@article{pycharge,
-      title={{P}y{C}harge: An open-source Python package for self-consistent electrodynamics simulations of Lorentz oscillators and moving point charges}, 
-      author={Matthew J. Filipovich and Stephen Hughes},
-      year={2021},
-      eprint={2107.12437},
-      archivePrefix={arXiv},
-      primaryClass={physics.comp-ph}
+    title = {{PyCharge}: {An} open-source {Python} package for self-consistent electrodynamics simulations of {Lorentz} oscillators and moving point charges},
+    author = {Filipovich, Matthew J. and Hughes, Stephen},
+    journal = {Computer Physics Communications},
+    volume = {274},
+    pages = {108291},
+    year = {2022},
+    doi = {10.1016/j.cpc.2022.108291},
+    url = {https://doi.org/10.1016/j.cpc.2022.108291},
 }"""
     print(citation)
