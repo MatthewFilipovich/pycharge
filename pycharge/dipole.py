@@ -246,7 +246,6 @@ class Dipole():
             charge.velocity[:, 0] = 0
             charge.acceleration[:, 0] = 0
 
-    # pylint: disable=no-self-use
     def _origin_fun(self, origin: ndarray) -> Callable[[float], ndarray]:
         """Return a function for a stationary origin."""
         def stationary_origin(t):  # pylint: disable=unused-argument

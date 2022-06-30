@@ -1,6 +1,5 @@
 """Unit tests for pycharge package."""
 # pragma pylint: disable=missing-function-docstring, missing-class-docstring
-# pragma pylint: disable=no-self-use
 import os
 import unittest
 from time import time

@@ -4,7 +4,6 @@ To run tests with MPI, use mpiexec on commandline:
 >> mpiexec -n 2 python -m unittest test_mpi.py
 """
 # pragma pylint: disable=missing-function-docstring, missing-class-docstring
-# pragma pylint: disable=no-self-use
 import os
 import unittest
 from time import time
