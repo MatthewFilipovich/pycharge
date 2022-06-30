@@ -5,13 +5,19 @@ import unittest
 from time import time
 
 import numpy as np
-from scipy.constants import m_e
+from scipy.constants import c, m_e
 
 import pycharge as pc
-from pycharge import (Dipole, LinearAcceleratingCharge,
-                      LinearDeceleratingCharge, LinearVelocityCharge,
-                      OrbittingCharge, OscillatingCharge, Simulation,
-                      StationaryCharge)
+from pycharge import (
+    Dipole,
+    LinearAcceleratingCharge,
+    LinearDeceleratingCharge,
+    LinearVelocityCharge,
+    OrbittingCharge,
+    OscillatingCharge,
+    Simulation,
+    StationaryCharge,
+)
 
 
 class Test(unittest.TestCase):
@@ -106,16 +112,14 @@ class Test(unittest.TestCase):
         simulation1 = Simulation(dipole1)
         simulation1.run(100, 1e-18)
 
-        def fun_origin2(t):
-            return np.array((.1e-9*np.cos(1e12*t), 0, 0))
-        dipole2 = Dipole(100e12*2*np.pi, fun_origin2, (1e-9, 0, 0))
+        dipole2 = Dipole(100e12*2*np.pi, fun_origin1, (1e-9, 0, 0))
         simulation2 = Simulation(dipole2)
         simulation2.run(100, 1e-18)
         self.assertEqual(simulation1, simulation2)
 
-        def fun_origin3(t):
+        def fun_origin2(t):
             return np.array((.05e-9*np.cos(1e12*t), 0, 0))
-        dipole3 = Dipole(100e12*2*np.pi, fun_origin3, (1e-9, 0, 0))
+        dipole3 = Dipole(100e12*2*np.pi, fun_origin2, (1e-9, 0, 0))
         simulation3 = Simulation(dipole3)
         simulation3.run(100, 1e-18)
         self.assertNotEqual(simulation2, simulation3)
@@ -245,6 +249,30 @@ class Test(unittest.TestCase):
         x1 = source1.charge_pair[0].xpos(np.arange(timesteps-1)*1e-18)
         x2 = source2.charge_pair[0].xpos(np.arange(timesteps-1)*1e-18)
         np.testing.assert_almost_equal(x1*2, x2)
+
+    # pragma pylint: disable=unused-argument
+    def test_load_save_external(self):
+        def E_external_fun1(t, x, y, z):
+            return [1e8*np.sin(2*np.pi/10e-9*(x-c*t)), 0, 0]
+
+        def E_external_fun2(t, x, y, z):
+            return [20, 0, 0]
+
+        try:
+            dipole1 = Dipole(100e12*2*np.pi, (0, 0, 0), (1e-9, 0, 0))
+            charge1 = StationaryCharge((1e-7, 0, 0))
+            simulation1 = Simulation((dipole1, charge1), E_external_fun1)
+            simulation1.run(500, 1e-18, 'test_save_external.dat')
+            simulation2 = Simulation((dipole1, charge1), E_external_fun2)
+            start_t1 = time()
+            simulation2.run(500, 1e-18, 'test_save_external.dat')
+            self.assertFalse((time()-start_t1) < 0.05)
+            simulation3 = Simulation((dipole1, charge1), E_external_fun1)
+            start_t2 = time()
+            simulation3.run(500, 1e-18, 'test_save_external.dat')
+            self.assertTrue((time()-start_t2) < 0.05)
+        finally:
+            os.remove('test_save_external.dat')
 
 
 if __name__ == '__main__':

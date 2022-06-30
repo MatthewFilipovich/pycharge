@@ -21,6 +21,8 @@ All units are in SI.
 """
 from __future__ import annotations
 
+import inspect
+import types
 from typing import Any, Callable, Optional, Sequence, Tuple, Union
 
 import dill as pickle
@@ -73,8 +75,15 @@ class Simulation():
         tol: float = 1e-22,
     ) -> None:
         self.tol = tol
-        self.E_external = E_external
-        self.B_external = B_external
+        # Create deep copies of the passed functions E_external and B_external
+        self.E_external = None if E_external is None else types.FunctionType(
+            E_external.__code__, E_external.__globals__, E_external.__name__,
+            E_external.__defaults__, E_external.__closure__
+        )
+        self.B_external = None if B_external is None else types.FunctionType(
+            B_external.__code__, B_external.__globals__, B_external.__name__,
+            B_external.__defaults__, B_external.__closure__
+        )
         self.all_charges = []  # List of all `Charge` objects
         self.dipoles = []  # List of `Dipole` objects
         if not isinstance(sources, Sequence):
@@ -92,9 +101,22 @@ class Simulation():
         self.save_E = None
 
     def __eq__(self, other: Any) -> bool:
+        # Check E_external and B_external are the same
+        if self.E_external is None or other.E_external is None:
+            same_E_external = self.E_external == other.E_external
+        else:
+            same_E_external = (inspect.getsource(self.E_external)
+                               == inspect.getsource(other.E_external))
+        if self.B_external is None or other.B_external is None:
+            same_B_external = self.B_external == other.B_external
+        else:
+            same_B_external = (inspect.getsource(self.B_external)
+                               == inspect.getsource(other.B_external))
+
         return (isinstance(other, self.__class__) and self.dt == other.dt
                 and self.all_charges == other.all_charges
-                and self.timesteps == other.timesteps)
+                and self.timesteps == other.timesteps
+                and same_E_external and same_B_external)
 
     def _save(self, file: str) -> None:
         """Save the `Simulation` object to a file."""

@@ -97,8 +97,9 @@ class Dipole():
                 origin.__code__, origin.__globals__, origin.__name__,
                 origin.__defaults__, origin.__closure__
             )
-        self.id = hashlib.sha1(str.encode(str(self.origin(1e-16))+str(omega_0)
-                                          + str(q)+str(m) + str(initial_r))
+        self.id = hashlib.sha1(str.encode(str(self.origin(1e-16))
+                                          + str(omega_0) + str(q) + str(m)
+                                          + str(initial_r))
                                ).hexdigest()  # Object id
         if np.linalg.norm(initial_r) == 0:
             raise ValueError('Initial moment must not be zero.')

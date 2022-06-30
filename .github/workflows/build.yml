@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@master
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Install dependencies
         run: |
           python --version
@@ -29,6 +29,7 @@ jobs:
           sudo apt install libopenmpi-dev
           pip install mpi4py
           pip install pylint
+          pip install -r requirements.txt
           pip install .
       - name: Run pylint
         run: |
