@@ -102,16 +102,16 @@ class Simulation():
 
     def __eq__(self, other: Any) -> bool:
         # Check E_external and B_external are the same
-        if self.E_external is None or other.E_external is None:
-            same_E_external = self.E_external == other.E_external
-        else:
+        try:
             same_E_external = (inspect.getsource(self.E_external)
                                == inspect.getsource(other.E_external))
-        if self.B_external is None or other.B_external is None:
-            same_B_external = self.B_external == other.B_external
-        else:
+        except TypeError:  # If one or both E_external is None
+            same_E_external = self.E_external == other.E_external
+        try:
             same_B_external = (inspect.getsource(self.B_external)
                                == inspect.getsource(other.B_external))
+        except TypeError:  # If one or both B_external is None
+            same_B_external = self.B_external == other.B_external
 
         return (isinstance(other, self.__class__) and self.dt == other.dt
                 and self.all_charges == other.all_charges
