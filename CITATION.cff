@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Filipovich"
+    given-names: "Matthew J."
+    orcid: "https://orcid.org/0000-0002-2195-698X"
+  - family-names: "Hughes"
+    given-names: "Stephen"
+  doi: "10.1016/j.cpc.2022.108291"
+  journal: "Computer Physics Communications"
+  month: 5
+  start: 108291 # First page number
+  title: "PyCharge: An open-source Python package for self-consistent electrodynamics simulations of Lorentz oscillators and moving point charges"
+  volume: 274
+  year: 2022
