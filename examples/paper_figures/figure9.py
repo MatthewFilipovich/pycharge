@@ -29,7 +29,7 @@ def scaled_total_energy(dipole1, dipole2):
                + 0.5*k*(dipole1.moment_disp[0])**2)
     energy2 = (0.5*dipole2.m_eff * dipole2.moment_vel[0]**2
                + 0.5*k*(dipole2.moment_disp[0])**2)
-    max_energy = max(max(energy1), max(energy2))
+    max_energy = max(max(energy1), max(energy2))  # pylint: disable=W3301
     return (energy1/max_energy, energy2/max_energy)
 
 

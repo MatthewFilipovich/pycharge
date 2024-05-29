@@ -185,7 +185,7 @@ class Simulation():
             E_y += E_field[1]
             E_z += E_field[2]
         if self.E_external is not None:  # Add external E field
-            E_field_external = self.E_external(t, x, y, z)
+            E_field_external = self.E_external(t, x, y, z)  # pylint: disable=E1102
             E_x += E_field_external[0]
             E_y += E_field_external[1]
             E_z += E_field_external[2]
@@ -236,7 +236,7 @@ class Simulation():
             By += 1/(c*r_mag)*(rz*E_x-rx*E_z)
             Bz += 1/(c*r_mag)*(rx*E_y-ry*E_x)
         if self.B_external is not None:  # Add external B field
-            B_field_external = self.B_external(t, x, y, z)
+            B_field_external = self.B_external(t, x, y, z)  # pylint: disable=E1102
             Bx += B_field_external[0]
             By += B_field_external[1]
             Bz += B_field_external[2]
@@ -461,8 +461,8 @@ class Simulation():
         """
         try:
             from mpi4py import MPI  # pylint: disable=import-outside-toplevel
-        except ImportError:
-            NotImplementedError('mpi4py package is not installed.')
+        except ImportError as exc:
+            raise NotImplementedError('mpi4py package is not installed.') from exc
         self._init_simulation(timesteps, dt, save_E)
         if file is not None and self._load(file):
             return

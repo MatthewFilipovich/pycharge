@@ -22,7 +22,7 @@ PyCharge was developed to allow both novice and experienced users model a wide r
 - Moving dipoles can be modelled by specifying the dipole's origin position as a function of time.
 - Parallelized version of the dipole simulation method using [mpi4py](https://mpi4py.readthedocs.io/en/stable/) to enable the parallel execution of computationally demanding simulations on high performance computing environments to significantly improve run time.
 
-Our computational physics paper introducing the PyCharge package is available on [arXiv](https://arxiv.org/abs/2107.12437) and includes an extensive review of the rich physics that govern the coupled dipole simulations.
+Our research paper, published in [Computational Physics Communications](https://doi.org/10.1016/j.cpc.2022.108291) and available on [arXiv](https://arxiv.org/abs/2107.12437), introduces the PyCharge package and provides a comprehensive review of the rich physics that govern the coupled dipole simulations.
 
 ## Documentation
 
@@ -99,7 +99,7 @@ We welcome all bug reports and suggestions for future features and enhancements,
 If you are using PyCharge for research purposes, we kindly request that you cite the following paper:
 
 M. Filipovich and S. Hughes, [PyCharge: An open-source Python package for self-consistent electrodynamics
-simulations of Lorentz oscillators and moving point charges](https://arxiv.org/abs/2107.12437), arXiv:2107.12437.
+simulations of Lorentz oscillators and moving point charges](https://doi.org/10.1016/j.cpc.2022.108291), Comput. Phys. Commun. 274, 108291 (2022).
 
 ## License
 
