@@ -98,8 +98,8 @@ We welcome all bug reports and suggestions for future features and enhancements,
 
 If you are using PyCharge for research purposes, we kindly request that you cite the following paper:
 
-M. Filipovich and S. Hughes, [PyCharge: An open-source Python package for self-consistent electrodynamics
-simulations of Lorentz oscillators and moving point charges](https://doi.org/10.1016/j.cpc.2022.108291), Comput. Phys. Commun. 274, 108291 (2022).
+M. Filipovich and S. Hughes, PyCharge: An open-source Python package for self-consistent electrodynamics
+simulations of Lorentz oscillators and moving point charges, [Comput. Phys. Commun.](https://doi.org/10.1016/j.cpc.2022.108291) 274, 108291 (2022).
 
 ## License
 
