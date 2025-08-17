@@ -3,8 +3,6 @@ Scalar potential
 =================
 """
 
-from time import time
-
 # %% Import necessary libraries
 import jax
 import jax.numpy as jnp
@@ -13,16 +11,8 @@ from scipy.constants import e
 
 from pycharge import Charge, scalar_potential
 
-# %% Define observation grid in the x-y plane
-x = jnp.linspace(-1e-9, 1e-9, int(1e3))
-y = jnp.linspace(-1e-9, 1e-9, int(1e3))
-z = jnp.array([0])
-t = jnp.array([0])
 
-X, Y, Z, T = jnp.meshgrid(x, y, z, t, indexing="ij")
-
-
-# %% Define the source position function
+# %% Define the position functions of the two charges
 def position1(t):
     x = 1e-10 * jnp.sin(1e18 * t)
     y = 1e-10 * jnp.cos(1e18 * t)
@@ -40,13 +30,19 @@ def position2(t):
 # Create a list of charges and JIT compile the scalar potential function
 charges = [Charge(position1, e), Charge(position2, 0.2 * e)]
 potentials_fn = jax.jit(scalar_potential(charges))
+# %% Define the observation grid in the x-y plane at z=0 and t=0
+x = jnp.linspace(-1e-9, 1e-9, int(1e3))
+y = jnp.linspace(-1e-9, 1e-9, int(1e3))
+z = jnp.array([0])
+t = jnp.array([0])
 
-# Calculate scalar potential at grid points
-start_t = time()
+X, Y, Z, T = jnp.meshgrid(x, y, z, t, indexing="ij")
+
+
+# %% Calculate the scalar potential at grid points
 scalar_potential_grid = potentials_fn(X, Y, Z, T)
-print(f"Time taken for batched evaluation: {time() - start_t:.4f} seconds")
 
-# %% Plot the result
+# %% Plot the potential along the observation grid
 plt.imshow(
     scalar_potential_grid.squeeze(),
     extent=(-1e-9, 1e-9, -1e-9, 1e-9),
