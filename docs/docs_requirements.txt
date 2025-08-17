@@ -1,9 +1,8 @@
-mkdocs-material==7.1.5
-python-markdown-math==0.8
-mkdocstrings-python==1.10.3
-numpy==1.20.3
-dill==0.3.3
-scipy==1.6.3
-tqdm==4.61.2
-matplotlib==3.4.2
-jinja2<3.1.0
+mkdocs-material
+python-markdown-math
+mkdocstrings-python
+numpy
+dill
+scipy
+tqdm
+matplotlib
