@@ -1,3 +1,4 @@
+"""This module defines functions to calculate electromagnetic quantities."""
 from typing import Callable, Iterable, Literal
 
 from jax import Array

@@ -1,3 +1,4 @@
+"""This module defines the function for calculating the potentials and fields."""
 from typing import Callable, Iterable, Literal
 
 import jax

@@ -1,3 +1,5 @@
+"""This module defines the Charge class."""
+
 from dataclasses import dataclass
 from typing import Callable, Sequence, TypeAlias
 

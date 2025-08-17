@@ -1,3 +1,5 @@
+"""PyCharge: Differentiable electromagnetics simulation library for moving point charges built on JAX."""
+
 from .charge import Charge
 from .electromagnetic_quantities import (
     electric_field,
