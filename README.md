@@ -66,7 +66,7 @@ We welcome contributions! See our [Contributing Guide](https://github.com/Matthe
 
 ## Citing PyCharge
 
-If you use PyCharge in your research, please cite our [paper](https://arxiv.org/abs/2411.18591):
+If you use PyCharge in your research, please cite our [paper](https://doi.org/10.1016/j.cpc.2022.108291).
 
 ```bibtex
   @article{filipovich2022pycharge,
