@@ -17,9 +17,7 @@
 PyCharge Documentation
 ==========================
 
-
-
-PyCharge is an open-source Python library for differentiable electromagnetics simulations of moving point charges with JAX.
+PyCharge is a differentiable electromagnetics simulation library for moving point charges built on JAX.
 
 Key Features
 ------------
