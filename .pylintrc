@@ -5,4 +5,5 @@ disable=invalid-name,
         too-many-instance-attributes,
         c-extension-no-member,
         too-many-locals,
-        R0801
+        R0801,
+        too-many-positional-arguments

@@ -9,7 +9,7 @@ import unittest
 from time import time
 
 import numpy as np
-from mpi4py import MPI  # pylint: disable=import-error
+from mpi4py import MPI  # pylint: disable=import-error, no-name-in-module
 
 from pycharge import Dipole, Simulation, StationaryCharge
 
