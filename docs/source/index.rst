@@ -17,93 +17,84 @@
 PyCharge Documentation
 ==========================
 
-.. warning::
 
-   TODO!!!
 
 PyCharge is an open-source Python library for differentiable electromagnetics simulations of moving point charges with JAX.
 
 Key Features
 ------------
 
-TODO!
+.. warning::
 
+   TODO!!!
 .. .. grid:: 1 2 2 3
 ..    :gutter: 2
 
 ..    .. grid-item-card:: 🌊 **Differentiable Wave Optics**
 ..       :class-card: sd-bg-light sd-border sd-shadow
 
-..       A comprehensive framework for modeling, analyzing, and designing optical systems using differentiable Fourier optics.
+..       Model, analyze, and optimize optical systems using Fourier optics.
 
 ..    .. grid-item-card:: 🔥 **Built on PyTorch**
 ..       :class-card: sd-bg-light sd-border sd-shadow
 
-..       Leverages PyTorch for GPU acceleration, batch processing, automatic differentiation, and efficient gradient-based optimization.  
+..       GPU acceleration, batch processing, and automatic differentiation.
 
 ..    .. grid-item-card:: 🛠️ **End-to-End Optimization**
 ..       :class-card: sd-bg-light sd-border sd-shadow
 
-..       Enables optimization of optical hardware and deep learning models within a unified, differentiable pipeline.
+..       Joint optimization of optical hardware and machine learning models.
 
 ..    .. grid-item-card:: 🔬 **Optical Elements**
 ..       :class-card: sd-bg-light sd-border sd-shadow
 
-..       Features standard optical elements like modulators, lenses, detectors, and polarizers.
+..       Lenses, modulators, detectors, polarizers, and more.
 
 ..    .. grid-item-card:: 🖼️ **Spatial Profiles**
 ..       :class-card: sd-bg-light sd-border sd-shadow
 
-..       Provides a wide range of spatial profiles, including Hermite-Gaussian and Laguerre-Gaussian beams.
+..       Hermite-Gaussian, Laguerre-Gaussian, Zernike modes, and others.
 
 ..    .. grid-item-card:: 🔆 **Polarization & Coherence**
 ..       :class-card: sd-bg-light sd-border sd-shadow
 
-..       Supports simulations of polarized light and optical fields with arbitrary spatial coherence.
+..       Simulate polarized light and fields with arbitrary spatial coherence.
 
 .. _installation:
 
 Installation
 ------------
 
-To install the latest **stable release** of PyCharge from `PyPI <https://pypi.org/project/pycharge>`_ , run:
+PyCharge is available on `PyPI <https://pypi.org/project/pycharge>`_ and can be installed with:
 
 .. code-block:: bash
 
     pip install pycharge
 
-For the latest **development version**, install directly from `GitHub <https://github.com/MatthewFilipovich/pycharge>`_:
-
-
-.. code-block:: bash
-
-    git clone https://github.com/MatthewFilipovich/pycharge
-    cd pycharge
-    pip install -e '.[dev]'
-
-This installs the library in editable mode, along with additional dependencies for development and testing.
-
 
 Contributing
 --------------
 
-We welcome bug reports, questions, and feature suggestions to improve PyCharge.
-
-- **Found a bug or have a question?** Please `open an issue on GitHub <https://github.com/MatthewFilipovich/pycharge/issues>`_.
-- **Want to contribute a new feature?** Follow these steps:
-
-1. **Fork the repository**: Go to `https://github.com/MatthewFilipovich/pycharge/fork <https://github.com/MatthewFilipovich/pycharge/fork>`_
-2. **Create a feature branch**: ``git checkout -b feature/fooBar``
-3. **Commit your changes**: ``git commit -am 'Add some fooBar'``
-4. **Push to the branch**: ``git push origin feature/fooBar``
-5. **Submit a Pull Request**: Open a Pull Request on GitHub
+We welcome contributions! See our `Contributing Guide <https://github.com/MatthewFilipovich/pycharge/blob/main/CONTRIBUTING.md>`_ for details.
 
 Citing PyCharge
 -------------------
 
-If you use PyCharge in your research, please cite our paper:
+If you use PyCharge in your research, please cite our `paper <https://doi.org/10.1016/j.cpc.2022.108291>`_:
 
-    M. Filipovich and S. Hughes, *PyCharge: An open-source Python package for self-consistent electrodynamics simulations of Lorentz oscillators and moving point charges*, `Comput. Phys. Commun. <https://doi.org/10.1016/j.cpc.2022.108291>`_ 274, 108291 (2022).
+.. code-block:: bibtex
+   @misc{filipovich2022pycharge,
+     title={PyCharge: An open-source Python package for self-consistent electrodynamics simulations of Lorentz oscillators and moving point charges},
+     author={Matthew J. Filipovich and S. Hughes},
+     year={2022},
+     journaltitle = {Computer Physics Communications},
+     volume = {274},
+     pages = {108291},
+     issn = {00104655},
+     doi = {10.1016/j.cpc.2022.108291},
+     url={https://doi.org/10.1016/j.cpc.2022.108291},
+   }
+
 License
 -------
 
