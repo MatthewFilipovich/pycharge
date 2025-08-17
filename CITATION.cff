@@ -3,11 +3,11 @@ message: "If you use this software, please cite it as below."
 preferred-citation:
   type: article
   authors:
-  - family-names: "Filipovich"
-    given-names: "Matthew J."
-    orcid: "https://orcid.org/0000-0002-2195-698X"
-  - family-names: "Hughes"
-    given-names: "Stephen"
+    - family-names: "Filipovich"
+      given-names: "Matthew J."
+      orcid: "https://orcid.org/0000-0002-2195-698X"
+    - family-names: "Hughes"
+      given-names: "Stephen"
   doi: "10.1016/j.cpc.2022.108291"
   journal: "Computer Physics Communications"
   month: 5

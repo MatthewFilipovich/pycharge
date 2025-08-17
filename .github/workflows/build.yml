@@ -6,39 +6,40 @@ on:
   pull_request:
     branches: [main]
 
-  # Allow to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+      fail-fast: false
 
     steps:
-      - uses: actions/checkout@main
-      - name: Set up Python 3.9
-        uses: actions/setup-python@main
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: ${{ matrix.python-version }}
+
       - name: Install dependencies
         run: |
-          python --version
-          pip install -U pip
-          pip install coverage
-          sudo apt-get update -y
-          sudo apt-get install -y mpich
-          sudo apt install libopenmpi-dev
-          pip install mpi4py
-          pip install pylint
-          pip install -r requirements.txt
-          pip install .
-      - name: Run pylint
+          python -m pip install --upgrade pip
+          pip install .[dev]
+
+      - name: Checks with pre-commit
+        uses: pre-commit/action@v3.0.1
+
+      - name: Run tests and generate coverage report
         run: |
-          pylint pycharge
-          pylint examples
-          pylint tests
-      - name: Run tests
-        run: coverage run -m unittest discover tests
+          coverage run -m pytest tests
+          coverage xml
+
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        if: matrix.python-version == '3.10'
+        uses: codecov/codecov-action@v5
         with:
-          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: true
+          verbose: true

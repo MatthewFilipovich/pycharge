@@ -1,3 +1,0 @@
-# charges module
-
-::: pycharge.charges
