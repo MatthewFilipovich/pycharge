@@ -51,6 +51,7 @@ def potentials_and_fields(
     solver_config = solver_config or {}
 
     # Precompute functions for each charge
+    # TODO: replace for loop with jax.lax.scan?
     position_fns = [lambda t, c=charge: jnp.asarray(c.position(t)) for charge in charges]  # Convert to array
     velocity_fns = [jax.jacobian(pos_fn) for pos_fn in position_fns]
     acceleration_fns = [jax.jacobian(vel_fn) for vel_fn in velocity_fns]
