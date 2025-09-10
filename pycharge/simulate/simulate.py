@@ -6,11 +6,12 @@ from pycharge import Charge
 
 
 def simulate(sources, t):
-    state_map = {source: jnp.zeros([len(source.charges_0), len(t), 2, 3]) for source in sources}
+    t = jnp.asarray(t)
+    state_map = {id(source): jnp.zeros([len(t), len(source.charges_0), 2, 3]) for source in sources}
 
     def get_other_charges(source):
         other_charges = []
-        other_sources = [s for s in sources if s != source]
+        other_sources = [s for s in sources if s is not source]
 
         for other_source in other_sources:
             for charge_idx, charge_0 in enumerate(other_source.charges_0):
@@ -18,7 +19,7 @@ def simulate(sources, t):
                     lambda time: charge_0.position(time)
                     if time < t[0]
                     else jnp.interp(
-                        time, t, state_map[other_source][charge_idx]
+                        time, t, state_map[id(other_source)][:, charge_idx]
                     ),  # Problem... won't work with 3D
                     charge_0.q,
                 )
@@ -28,7 +29,7 @@ def simulate(sources, t):
 
     def rk4_step(source, time_step):
         f = partial(source.func_ode, other_charges=get_other_charges(source))
-        state = state_map[source]
+        state = state_map[id(source)][time_step]
 
         time = t[time_step]
         dt = t[time_step + 1] - t[time_step]
@@ -41,9 +42,10 @@ def simulate(sources, t):
 
     for time_step in range(len(t) - 1):
         for source in sources:
-            state_map[source] = rk4_step(source, time_step)
+            updated_state = rk4_step(source, time_step)
+            state_map[id(source)] = state_map[id(source)].at[time_step + 1].set(updated_state)
 
-    return state_map
+    return state_map.values()
 
 
 if __name__ == "__main__":
@@ -51,12 +53,19 @@ if __name__ == "__main__":
 
     from pycharge.simulate.sources import dipole_source
 
-    dipole = dipole_source(
-        positions_0=[jnp.array([0.0, 0.0, 1 - 9]), jnp.array([0.0, 0.0, -1e-9])],
+    dipole0 = dipole_source(
+        positions_0=[jnp.array([0.0, 0.0, 1e-9]), lambda t: jnp.array([0.0, 0.0, -1e-9])],
         q=e,
         omega_0=1e9,
         m=m_e,
     )
 
-    output = simulate([dipole], jnp.linspace(0, 1e-8, 100))
+    dipole1 = dipole_source(
+        positions_0=[jnp.array([0.0, 1e-8, 1e-9]), lambda t: jnp.array([0.0, 1e-8, -1e-9])],
+        q=e,
+        omega_0=1e9,
+        m=m_e,
+    )
+
+    output = simulate([dipole0, dipole1], jnp.linspace(0, 1e-9, 100))
     print(output)

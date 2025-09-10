@@ -1,4 +1,5 @@
 """This module defines the function for calculating the potentials and fields."""
+
 from typing import Callable, Iterable, Literal
 
 import jax
@@ -40,6 +41,9 @@ def potentials_and_fields(
     """
 
     # Ensure charges is an iterable
+    if not charges:
+        raise ValueError("At least one charge must be provided.")
+
     if isinstance(charges, Charge):
         charges = [charges]
 
@@ -47,6 +51,10 @@ def potentials_and_fields(
         raise ValueError(
             f"Invalid field_component: {field_component}. Must be 'total', 'velocity', or 'acceleration'."
         )
+
+    for charge in charges:
+        if not isinstance(charge.position, Callable):
+            raise ValueError("Each charge's position must be a callable function of time.")
 
     solver_config = solver_config or {}
 
