@@ -47,11 +47,16 @@ def simulate(sources, t):
 
 
 if __name__ == "__main__":
-    from scipy.constants import e
+    from scipy.constants import e, m_e
 
-    from .sources import Source, dipole
+    from pycharge.simulate.sources import dipole_source
 
-    source = Source(
-        charges_0=[Charge(lambda t: [-1e-9, 0, 0], e), Charge(lambda t: [1e-9, 0, 0], -e)],
-        func_ode=dipole(),
+    dipole = dipole_source(
+        positions_0=[jnp.array([0.0, 0.0, 1 - 9]), jnp.array([0.0, 0.0, -1e-9])],
+        q=e,
+        omega_0=1e9,
+        m=m_e,
     )
+
+    output = simulate([dipole], jnp.linspace(0, 1e-8, 100))
+    print(output)

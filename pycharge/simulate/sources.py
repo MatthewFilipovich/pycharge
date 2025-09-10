@@ -15,7 +15,7 @@ class Source:
     func_ode: Callable  # For each charge!
 
 
-def dipole(positions_0, q, omega_0, m):
+def dipole_source(positions_0, q, omega_0, m):
     m_eff = m / 2
 
     def dipole_ode_fn(time, state, other_charges):
