@@ -5,7 +5,7 @@ import jax.numpy as jnp
 from pycharge import Charge
 
 
-def simulation(sources, t):
+def simulate(sources, t):
     state_map = {source: jnp.zeros([len(source.charges_0), len(t), 2, 3]) for source in sources}
 
     def get_other_charges(source):
