@@ -1,63 +1,57 @@
+from functools import partial
+
 import jax.numpy as jnp
 
 from pycharge import Charge
 
 
 def simulation(sources, t):
-    charge_0_list = [charge_0 for source in sources for charge_0 in source.charges_0]
+    state_map = {source: jnp.zeros([len(source.charges_0), len(t), 2, 3]) for source in sources}
 
-    charge_position_map = {charge_0: jnp.zeros([len(t), 3]) for charge_0 in charge_0_list}
-    for charge_0 in charge_0_list:  # Initialize charge positions
-        charge_position_map[charge_0] = charge_position_map[charge_0].at[0].set(charge_0.position(0))
+    def get_other_charges(source):
+        other_charges = []
+        other_sources = [s for s in sources if s != source]
 
-    charge_map = {
-        charge_0: Charge(
-            lambda time: charge_0.position(time)
-            if time < t[0]
-            else jnp.interp(time, t, charge_position_map[charge_0]),  # Problem... won't work with 3D
-            charge_0.q,
-        )
-        for charge_0 in charge_0_list
-    }
+        for other_source in other_sources:
+            for charge_idx, charge_0 in enumerate(other_source.charges_0):
+                charge = Charge(
+                    lambda time: charge_0.position(time)
+                    if time < t[0]
+                    else jnp.interp(
+                        time, t, state_map[other_source][charge_idx]
+                    ),  # Problem... won't work with 3D
+                    charge_0.q,
+                )
+                other_charges.append(charge)
 
-    for time_step in range(len(t) - 1):
+        return other_charges
+
+    def rk4_step(source, time_step):
+        f = partial(source.func_ode, other_charges=get_other_charges(source))
+        state = state_map[source]
+
+        time = t[time_step]
         dt = t[time_step + 1] - t[time_step]
 
+        k1 = f(time, state)
+        k2 = f(time + dt / 2, state + dt / 2 * k1)
+        k3 = f(time + dt / 2, state + dt / 2 * k2)
+        k4 = f(time + dt, state + dt * k3)
+        return state + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+
+    for time_step in range(len(t) - 1):
         for source in sources:
-            source_charges = [charge_map[charge_0] for charge_0 in source.charges_0]
-            other_charges = [
-                charge_map[charge_0] for charge_0 in charge_0_list if charge_0 not in source.charges_0
-            ]
+            state_map[source] = rk4_step(source, time_step)
 
-            (updated_charge_positions, vel) = rk4_step(
-                lambda time: source.func_ode(source_charges, other_charges, time),
-                [updated_charge_positions, vel],  # Yeah this is bad...!
-                t[time_step],
-                dt,
-            )
-
-            for charge_0 in charge_0_list:  # Update charge positions
-                charge_position_map[charge_0] = (
-                    charge_position_map[charge_0].at[time_step].set(updated_charge_positions)
-                )
-
-    return charge_map.values()
-
-
-def rk4_step(f, y, t, dt):
-    k1 = f(t, y)
-    k2 = f(t + dt / 2, y + dt / 2 * k1)
-    k3 = f(t + dt / 2, y + dt / 2 * k2)
-    k4 = f(t + dt, y + dt * k3)
-    return y + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+    return state_map
 
 
 if __name__ == "__main__":
     from scipy.constants import e
 
-    from .source import Source, dipole_ode
+    from .sources import Source, dipole
 
     source = Source(
         charges_0=[Charge(lambda t: [-1e-9, 0, 0], e), Charge(lambda t: [1e-9, 0, 0], -e)],
-        func_ode=dipole_ode(),
+        func_ode=dipole(),
     )

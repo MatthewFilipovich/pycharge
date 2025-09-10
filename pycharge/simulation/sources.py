@@ -1,0 +1,32 @@
+"""This module defines the Source class."""
+
+from dataclasses import dataclass
+from typing import Callable, Iterable
+
+import jax.numpy as jnp
+from scipy.constants import c, epsilon_0
+
+from pycharge import Charge, electric_field
+
+
+@dataclass(frozen=True)
+class Source:
+    charges_0: Iterable[Charge]
+    func_ode: Callable  # For each charge!
+
+
+def dipole(positions_0, q, omega_0, m):
+    m_eff = m / 2
+
+    def dipole_ode_fn(time, state, other_charges):
+        # Calculate dipole position and velocity
+        r, v = state[0]
+
+        E = electric_field(other_charges)(r[0], r[1], r[2], time)
+        gamma_0 = 1 / (4 * jnp.pi * epsilon_0) * 2 * q**2 * omega_0**2 / (3 * m_eff * c**3)
+        dx_dt = v
+        dv_dt = q / m_eff * E - gamma_0 * v - omega_0 * r
+
+        return [dx_dt, dv_dt], [-dx_dt, -dv_dt]  # Return for both charges
+
+    return Source(charges_0=[Charge(positions_0[0], q), Charge(positions_0[1], -q)], func_ode=dipole_ode_fn)
