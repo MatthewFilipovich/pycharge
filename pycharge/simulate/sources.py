@@ -16,14 +16,13 @@ class Source:
 
 
 def dipole_source(positions_0, q, omega_0, m):
-    m_eff = m / 2
+    m_eff = m[0] * m[1] / (m[0] + m[1])
+    gamma_0 = 1 / (4 * jnp.pi * epsilon_0) * 2 * q**2 * omega_0**2 / (3 * m_eff * c**3)
 
     def dipole_ode_fn(time, state, other_charges):
-        # Calculate dipole position and velocity
         r, v = state[0]
-
         E = electric_field(other_charges)(r[0], r[1], r[2], time) if other_charges else 0
-        gamma_0 = 1 / (4 * jnp.pi * epsilon_0) * 2 * q**2 * omega_0**2 / (3 * m_eff * c**3)
+
         dx_dt = v
         dv_dt = q / m_eff * E - gamma_0 * v - omega_0 * r
 
