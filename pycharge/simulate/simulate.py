@@ -1,6 +1,7 @@
 from functools import partial
 
 import jax.numpy as jnp
+from diffrax import CubicInterpolation
 
 from pycharge import Charge
 
@@ -15,12 +16,10 @@ def simulate(sources, t):
 
         for other_source in other_sources:
             for charge_idx, charge_0 in enumerate(other_source.charges_0):
-                charge = Charge(
-                    lambda time: charge_0.position(time)
-                    if time < t[0]
-                    else jnp.interp(
-                        time, t, state_map[id(other_source)][:, charge_idx]
-                    ),  # Problem... won't work with 3D
+                charge = Charge(  # Problem... won't work with 3D
+                    lambda t_eval: charge_0.position(t_eval)
+                    if t_eval < t[0]
+                    else CubicInterpolation(ts=t, ys=state_map[id(other_source)][:, charge_idx])(t_eval),
                     charge_0.q,
                 )
                 other_charges.append(charge)
