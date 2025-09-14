@@ -1,7 +1,6 @@
 """This module defines the Source class."""
 
-from dataclasses import dataclass
-from typing import Callable, Iterable
+from typing import Callable, Iterable, NamedTuple
 
 import jax.numpy as jnp
 from scipy.constants import c, epsilon_0
@@ -9,8 +8,7 @@ from scipy.constants import c, epsilon_0
 from pycharge import Charge, electric_field
 
 
-@dataclass(frozen=True)
-class Source:
+class Source(NamedTuple):
     charges_0: Iterable[Charge]
     func_ode: Callable  # For each charge!
 
