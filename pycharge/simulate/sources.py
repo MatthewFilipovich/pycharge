@@ -14,6 +14,8 @@ class Source(NamedTuple):
 
 
 def dipole_source(positions_0, q, omega_0, m):
+    if isinstance(m, (int, float)):
+        m = (m, m)
     m_eff = m[0] * m[1] / (m[0] + m[1])
     gamma_0 = 1 / (4 * jnp.pi * epsilon_0) * 2 * q**2 * omega_0**2 / (3 * m_eff * c**3)
 
