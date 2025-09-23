@@ -23,14 +23,24 @@ def dipole_source(positions_0, q, omega_0, m):
         electric_field_fn = (electric_field(other_charges)) if other_charges else 0
 
         def fn(time, state):
-            # print(time, state)
-            r, v = state[0]
-            E = electric_field_fn(r[0], r[1], r[2], time) if other_charges else 0
+            r0, v0 = state[0]
+            r1, v1 = state[1]
 
-            dx_dt = v
-            dv_dt = q / m_eff * E - gamma_0 * v - omega_0 * r
+            dipole_origin = (r0 + r1) / 2
+            # print("dipole_origin=", dipole_origin)
+            E = electric_field_fn(*dipole_origin, time) if other_charges else 0
+            # print("E=", E)
 
-            out = jnp.asarray([[dx_dt, dv_dt], [-dx_dt, -dv_dt]])
+            dipole_r = r0 - r1
+            dipole_v = v0 - v1
+            dipole_a = q / m_eff * E - gamma_0 * dipole_v - omega_0 * dipole_r
+
+            dr0_dt = v0
+            dr1_dt = v1
+            dv0_dt = dipole_a / 2
+            dv1_dt = -dipole_a / 2
+
+            out = jnp.asarray([[dr0_dt, dv0_dt], [dr1_dt, dv1_dt]])
 
             return out
 
