@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+from tqdm import tqdm
 
 from pycharge import Charge
 
@@ -7,6 +8,7 @@ from ..utils import make_cubic_hermite_spline
 
 
 def simulate(sources, t_start, t_end, t_num):  # TODO: change to ts and allow non-uniform spacing
+    t_start = float(t_start)
     ts = jnp.linspace(t_start, t_end, t_num)
     dt = ts[1] - ts[0]
 
@@ -20,17 +22,17 @@ def simulate(sources, t_start, t_end, t_num):  # TODO: change to ts and allow no
         charge_0 = sources[source_idx].charges_0[charge_0_idx]
 
         def charge_position(t):
-            if t < t_start:
-                return charge_0.position(t)
-            else:
-                t_index = (t - t_start) / dt
-                x0 = ts[t_index]
-                y0 = state_list[source_idx][t_index, charge_0_idx, 0]
-                m0 = state_list[source_idx][t_index, charge_0_idx, 1]
-                x1 = ts[t_index + 1]
-                y1 = state_list[source_idx][t_index + 1, charge_0_idx, 0]
-                m1 = state_list[source_idx][t_index + 1, charge_0_idx, 1]
-                return make_cubic_hermite_spline(x0, y0, m0, x1, y1, m1)(t)
+            t_index = ((t - t_start) / dt).astype(int)
+            x0 = ts[t_index]
+            y0 = state_list[source_idx][t_index, charge_0_idx, 0]
+            m0 = state_list[source_idx][t_index, charge_0_idx, 1]
+            x1 = ts[t_index + 1]
+            y1 = state_list[source_idx][t_index + 1, charge_0_idx, 0]
+            m1 = state_list[source_idx][t_index + 1, charge_0_idx, 1]
+
+            return jnp.where(
+                t < t_start, charge_0.position(t), make_cubic_hermite_spline(x0, y0, m0, x1, y1, m1)(t)
+            )
 
         return Charge(charge_position, charge_0.q)
 
@@ -40,7 +42,7 @@ def simulate(sources, t_start, t_end, t_num):  # TODO: change to ts and allow no
     ]
     charge_set = {c for sublist in charge_list for c in sublist}
 
-    for time_step, time in enumerate(ts[:-1]):
+    for time_step, time in enumerate(tqdm(ts[:-1])):
         for source_idx, source in enumerate(sources):
             other_charges = charge_set - {c for c in charge_list[source_idx]}
             current_state = state_list[source_idx][time_step]
@@ -60,23 +62,32 @@ def rk4_step(term, t0, t1, y0, dt, args):
 
 
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
     from scipy.constants import e, m_e
 
     from pycharge.simulate.sources import dipole_source
 
+    # jax.config.update("jax_enable_x64", True)
+
     dipole0 = dipole_source(
-        positions_0=[jnp.array([0.0, 0.0, 1e-9]), lambda t: jnp.array([0.0, 0.0, -1e-9])],
+        positions_0=[lambda t: jnp.array([0.0, 0.0, 0.5e-9]), lambda t: jnp.array([0.0, 0.0, -0.5e-9])],
         q=e,
-        omega_0=1e9,
+        omega_0=100e12 * 2 * jnp.pi,
         m=m_e,
     )
 
     dipole1 = dipole_source(
-        positions_0=[jnp.array([0.0, 1e-8, 1e-9]), lambda t: jnp.array([0.0, 1e-8, -1e-9])],
+        positions_0=[lambda t: jnp.array([0.0, 80e-9, 0.5e-9]), lambda t: jnp.array([0.0, 80e-9, -0.5e-9])],
         q=e,
-        omega_0=1e9,
+        omega_0=100e12 * 2 * jnp.pi,
         m=m_e,
     )
 
-    output = simulate([dipole0, dipole1], 0, 1e-9, 100)
-    print(output)
+    num_steps = 10000
+    dt = 1e-18
+    t_end = num_steps * dt
+
+    state_list, charge_list = (simulate)([dipole0, dipole1], 0, t_end, num_steps)
+    plt.plot(state_list[0][:, 0, 0, 2])
+    plt.plot(state_list[0][:, 1, 0, 2])
+    plt.show()

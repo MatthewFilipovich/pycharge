@@ -47,8 +47,8 @@ def make_cubic_hermite_spline(x0, y0, m0, x1, y1, m1):
         Calculates the interpolated y-value for a given x.
         This inner function has access to a, b, c, d, x0, and x1.
         """
-        if x < x0 or x > x1:
-            raise ValueError(f"Input x={x} is outside the interpolation interval [{x0}, {x1}]")
+        # if x < x0 or x > x1:
+        #     raise ValueError(f"Input x={x} is outside the interpolation interval [{x0}, {x1}]")
 
         # Normalize x to the [0, 1] interval as 't'
         t = (x - x0) / dx
