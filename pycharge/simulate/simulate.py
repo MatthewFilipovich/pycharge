@@ -59,7 +59,7 @@ def simulate(sources):
 
         # Define one scan step
         def step_fn(carry, time_idx):
-            print(time_idx)
+            jax.debug.print("x={x}", x=time_idx)
             state_list = carry
             time = ts[time_idx]
 
@@ -74,12 +74,7 @@ def simulate(sources):
             return new_state_list, None
 
         # Run scan over time steps
-        state_list, _ = jax.lax.scan(step_fn, state_list, jnp.arange(t_num - 1))
-
-        # carry = state_list
-        # for time_idx in range(t_num - 1):  # using Python int range for clarity
-        #     carry, _ = step_fn(carry, time_idx)
-        # state_list = carry
+        state_list, _ = jax.lax.scan(step_fn, state_list, jnp.arange(t_num - 2))  # TODO: Should this be -2?
         return state_list
 
     return simulate_fn
@@ -115,13 +110,13 @@ if __name__ == "__main__":
         m=m_e,
     )
 
-    num_steps = 20
+    num_steps = 40000
     dt = 1e-18
     t_end = num_steps * dt
     ts = jnp.linspace(0, t_end, num_steps)
 
     sim_fn = simulate([dipole0, dipole1])
-    sim_fn = sim_fn
+    # sim_fn = jax.jit(sim_fn)
     state_list = sim_fn(ts)
     plt.plot(state_list[0][:, 0, 0, 2])
     plt.plot(state_list[0][:, 1, 0, 2])
