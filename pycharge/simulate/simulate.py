@@ -1,4 +1,3 @@
-import equinox
 import jax
 import jax.numpy as jnp
 
@@ -14,14 +13,15 @@ def simulate(sources):
         t_finish = ts[-1]
         dt = ts[1] - ts[0]
 
-        # Preallocate state_list (we’ll treat it as a pytree of arrays)
-        state_list = [jnp.zeros([t_num, len(source.charges_0), 2, 3]) for source in sources]
+        # NOTE: THE + 1 is to save the very last value at each time idx... let's see if this works
+        state_list = [jnp.full([t_num + 1, len(source.charges_0), 2, 3], jnp.nan) for source in sources]
 
         # Initial conditions
         for source_idx, source in enumerate(sources):
             for charge_idx, charge in enumerate(source.charges_0):
                 initial_state = jnp.array([charge.position(t_start), jax.jacobian(charge.position)(t_start)])
                 state_list[source_idx] = state_list[source_idx].at[0, charge_idx].set(initial_state)
+                state_list[source_idx] = state_list[source_idx].at[-1, charge_idx].set(initial_state)
 
         # Charges
         def create_charge(source_idx, charge_0_idx):
@@ -33,15 +33,28 @@ def simulate(sources):
 
                 def interpolate():
                     idx = ((t - t_start) / dt).astype(int)
-                    x0 = ts[idx]
-                    y0 = state_list[source_idx][idx, charge_0_idx, 0]
-                    m0 = state_list[source_idx][idx, charge_0_idx, 1]
-                    x1 = ts[idx + 1]
-                    y1 = state_list[source_idx][idx + 1, charge_0_idx, 0]
-                    m1 = state_list[source_idx][idx + 1, charge_0_idx, 1]
 
-                    spline_fn = make_cubic_hermite_spline(x0, y0, m0, x1, y1, m1)
-                    return spline_fn(t)
+                    # Define the "if True" branch as a function
+                    def handle_nan():
+                        return state_list[source_idx][-1, charge_0_idx, 0]
+
+                    # Define the "else" branch as a function
+                    def do_interpolation():
+                        x0 = ts[idx]
+                        y0 = state_list[source_idx][idx, charge_0_idx, 0]
+                        m0 = state_list[source_idx][idx, charge_0_idx, 1]
+                        x1 = ts[idx + 1]
+                        y1 = state_list[source_idx][idx + 1, charge_0_idx, 0]
+                        m1 = state_list[source_idx][idx + 1, charge_0_idx, 1]
+
+                        spline_fn = make_cubic_hermite_spline(x0, y0, m0, x1, y1, m1)
+                        return spline_fn(t)
+
+                    # The condition to check
+                    is_nan = jnp.any(jnp.isnan(state_list[source_idx][idx + 1, charge_0_idx]))
+
+                    # Use jax.lax.cond to select the correct branch
+                    return jax.lax.cond(is_nan, handle_nan, do_interpolation)
 
                 def after_finish():
                     return state_list[source_idx][-1, charge_0_idx, 0]
@@ -65,39 +78,25 @@ def simulate(sources):
             func_ode_list.append(source.func_ode(other_charges))
 
         # Define one scan step
-        def step_fn(carry, time_idx):
-            jax.debug.print("{x}", x=time_idx)
-            state_list = carry
-            time = ts[time_idx]
+        for time_idx, time in enumerate(ts[:-1]):
+            print(time_idx)
+            jax.debug.print("...{x}", x=time_idx)
+            print(time)
 
-            new_state_list = []
             for source_idx, source in enumerate(sources):
                 current_state = state_list[source_idx][time_idx]
                 updated_state = rk4_step(func_ode_list[source_idx], time, time + dt, current_state, dt)
 
-                updated_src_state = state_list[source_idx].at[time_idx + 1].set(updated_state)
-                new_state_list.append(updated_src_state)
-                # jax.debug.print("new_state_list={x}", x=new_state_list)
+                state_list[source_idx] = state_list[source_idx].at[time_idx + 1].set(updated_state)
+                state_list[source_idx] = state_list[source_idx].at[-1].set(updated_state)
 
-            return new_state_list, None
-
-        # Run scan over time steps
-        state_list, _ = jax.lax.scan(step_fn, state_list, jnp.arange(t_num - 1))  # TODO: Should this be -2?
-
-        # carry = state_list
-        # for time_idx in tqdm(range(t_num - 1)):  # using Python int range for clarity
-        #     carry, _ = step_fn(carry, time_idx)
-        # state_list = carry
-
-        return state_list
+        return [s[:-1] for s in state_list]  # Pop last element
 
     return simulate_fn
 
 
 def rk4_step(term, t0, t1, y0, dt):
-    # jax.debug.print("y0={k1}", k1=y0)
     k1 = term(t0, y0)
-    # jax.debug.print("{k1}", k1=k1)
     k2 = term(t0 + dt / 2, y0 + dt / 2 * k1)
     k3 = term(t0 + dt / 2, y0 + dt / 2 * k2)
     k4 = term(t0 + dt, y0 + dt * k3)
@@ -126,13 +125,13 @@ if __name__ == "__main__":
         m=m_e,
     )
 
-    num_steps = 40_000
+    num_steps = 4000
     dt = 1e-18
     t_end = num_steps * dt
     ts = jnp.linspace(0, t_end, num_steps)
 
     sim_fn = simulate([dipole0, dipole1])
-    # sim_fn = jax.jit(sim_fn)
+    sim_fn = jax.jit(sim_fn)
     # sim_fn = equinox.filter_jit(sim_fn)
     state_list = sim_fn(ts)
     plt.plot(state_list[0][:, 0, 0, 2])

@@ -27,9 +27,7 @@ def dipole_source(positions_0, q, omega_0, m):
             r1, v1 = state[1]
 
             dipole_origin = (r0 + r1) / 2
-            # print("dipole_origin=", dipole_origin)
             E = electric_field_fn(*dipole_origin, time) if other_charges else 0
-            # print("E=", E)
 
             dipole_r = r0 - r1
             dipole_v = v0 - v1
