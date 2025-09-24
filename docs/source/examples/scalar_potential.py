@@ -4,6 +4,8 @@ Scalar potential
 """
 
 # %% Import necessary libraries
+from time import time
+
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -40,7 +42,11 @@ X, Y, Z, T = jnp.meshgrid(x, y, z, t, indexing="ij")
 
 
 # %% Calculate the scalar potential at grid points
-scalar_potential_grid = potentials_fn(X, Y, Z, T)
+for _ in range(10):
+    start_t = time()
+    scalar_potential_grid = potentials_fn(X, Y, Z, T)
+    print(time() - start_t)
+
 
 # %% Plot the potential along the observation grid
 plt.imshow(

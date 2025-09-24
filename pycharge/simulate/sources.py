@@ -31,7 +31,7 @@ def dipole_source(positions_0, q, omega_0, m):
 
             dipole_r = r0 - r1
             dipole_v = v0 - v1
-            dipole_a = q / m_eff * E - gamma_0 * dipole_v - omega_0 * dipole_r
+            dipole_a = q / m_eff * E - gamma_0 * dipole_v - omega_0**2 * dipole_r
 
             dr0_dt = v0
             dr1_dt = v1

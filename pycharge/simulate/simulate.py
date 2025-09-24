@@ -1,16 +1,67 @@
 import jax
 import jax.numpy as jnp
+from tqdm import tqdm
 
 from pycharge import Charge
 
 from ..utils import make_cubic_hermite_spline
 
 
+def create_charges(sources, state_list, ts):
+    t_start = ts[0]
+    t_end = ts[-1]
+
+    def create_charge(source_idx, charge_0_idx):
+        charge_0 = sources[source_idx].charges_0[charge_0_idx]
+
+        def charge_position(t):
+            def before_start():
+                return charge_0.position(t)
+
+            def interpolate():
+                t_idx = ((t - t_start) / dt).astype(int)
+
+                # Define the "if True" branch as a function
+                def handle_nan():
+                    return state_list[source_idx][-1, charge_0_idx, 0]
+
+                # Define the "else" branch as a function
+                def do_interpolation():
+                    x0 = ts[t_idx]
+                    y0 = state_list[source_idx][t_idx, charge_0_idx, 0]
+                    m0 = state_list[source_idx][t_idx, charge_0_idx, 1]
+                    x1 = ts[t_idx + 1]
+                    y1 = state_list[source_idx][t_idx + 1, charge_0_idx, 0]
+                    m1 = state_list[source_idx][t_idx + 1, charge_0_idx, 1]
+
+                    spline_fn = make_cubic_hermite_spline(x0, y0, m0, x1, y1, m1)
+                    return spline_fn(t)
+
+                # The condition to check
+                is_nan = jnp.any(jnp.isnan(state_list[source_idx][t_idx + 1, charge_0_idx]))
+
+                # Use jax.lax.cond to select the correct branch
+                return jax.lax.cond(is_nan, handle_nan, do_interpolation)
+
+            def after_finish():
+                return state_list[source_idx][-1, charge_0_idx, 0]
+
+            return jax.lax.cond(
+                t < t_start, before_start, lambda: jax.lax.cond(t < t_end, interpolate, after_finish)
+            )
+
+        return Charge(charge_position, charge_0.q)
+
+    return [
+        [create_charge(source_idx, charge_0_idx) for charge_0_idx, _ in enumerate(source.charges_0)]
+        for source_idx, source in enumerate(sources)
+    ]
+
+
 def simulate(sources):
     def simulate_fn(ts):  # TODO: change to ts and allow non-uniform spacing
         t_num = len(ts)
         t_start = ts[0]
-        t_finish = ts[-1]
         dt = ts[1] - ts[0]
 
         # NOTE: THE + 1 is to save the very last value at each time idx... let's see if this works
@@ -24,51 +75,7 @@ def simulate(sources):
                 state_list[source_idx] = state_list[source_idx].at[-1, charge_idx].set(initial_state)
 
         # Charges
-        def create_charge(source_idx, charge_0_idx):
-            charge_0 = sources[source_idx].charges_0[charge_0_idx]
-
-            def charge_position(t):
-                def before_start():
-                    return charge_0.position(t)
-
-                def interpolate():
-                    idx = ((t - t_start) / dt).astype(int)
-
-                    # Define the "if True" branch as a function
-                    def handle_nan():
-                        return state_list[source_idx][-1, charge_0_idx, 0]
-
-                    # Define the "else" branch as a function
-                    def do_interpolation():
-                        x0 = ts[idx]
-                        y0 = state_list[source_idx][idx, charge_0_idx, 0]
-                        m0 = state_list[source_idx][idx, charge_0_idx, 1]
-                        x1 = ts[idx + 1]
-                        y1 = state_list[source_idx][idx + 1, charge_0_idx, 0]
-                        m1 = state_list[source_idx][idx + 1, charge_0_idx, 1]
-
-                        spline_fn = make_cubic_hermite_spline(x0, y0, m0, x1, y1, m1)
-                        return spline_fn(t)
-
-                    # The condition to check
-                    is_nan = jnp.any(jnp.isnan(state_list[source_idx][idx + 1, charge_0_idx]))
-
-                    # Use jax.lax.cond to select the correct branch
-                    return jax.lax.cond(is_nan, handle_nan, do_interpolation)
-
-                def after_finish():
-                    return state_list[source_idx][-1, charge_0_idx, 0]
-
-                return jax.lax.cond(
-                    t < t_start, before_start, lambda: jax.lax.cond(t < t_finish, interpolate, after_finish)
-                )
-
-            return Charge(charge_position, charge_0.q)
-
-        charge_list = [
-            [create_charge(source_idx, charge_0_idx) for charge_0_idx, _ in enumerate(source.charges_0)]
-            for source_idx, source in enumerate(sources)
-        ]
+        charge_list = create_charges(sources, state_list, ts)
         charge_set = {c for sublist in charge_list for c in sublist}
 
         # ODEs
@@ -77,11 +84,11 @@ def simulate(sources):
             other_charges = charge_set - {c for c in charge_list[source_idx]}
             func_ode_list.append(source.func_ode(other_charges))
 
-        # Define one scan step
-        for time_idx, time in enumerate(ts[:-1]):
-            print(time_idx)
-            jax.debug.print("...{x}", x=time_idx)
-            print(time)
+        # TODO: Define one scan step jax.lax.fori_loop
+        for time_idx, time in enumerate(tqdm(ts[:-1])):
+            # print(time_idx)
+            # jax.debug.print("...{x}", x=time_idx)
+            # print(time)
 
             for source_idx, source in enumerate(sources):
                 current_state = state_list[source_idx][time_idx]
@@ -125,13 +132,13 @@ if __name__ == "__main__":
         m=m_e,
     )
 
-    num_steps = 4000
+    num_steps = 400
     dt = 1e-18
-    t_end = num_steps * dt
+    t_end = (num_steps - 1) * dt
     ts = jnp.linspace(0, t_end, num_steps)
 
     sim_fn = simulate([dipole0, dipole1])
-    sim_fn = jax.jit(sim_fn)
+    # sim_fn = jax.jit(sim_fn)
     # sim_fn = equinox.filter_jit(sim_fn)
     state_list = sim_fn(ts)
     plt.plot(state_list[0][:, 0, 0, 2])
