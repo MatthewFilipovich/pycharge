@@ -131,18 +131,9 @@ if __name__ == "__main__":
 
     # jax.config.update("jax_enable_x64", True)
 
-    dipole0 = dipole_source(
-        positions_0=[lambda t: jnp.array([0.0, 0.0, 0.5e-9]), lambda t: jnp.array([0.0, 0.0, -0.5e-9])],
-        q=e,
-        omega_0=100e12 * 2 * jnp.pi,
-        m=m_e,
-    )
-
+    dipole0 = dipole_source(d0=[0.0, 0.0, 1e-9], q=e, omega_0=100e12 * 2 * jnp.pi, m=m_e)
     dipole1 = dipole_source(
-        positions_0=[lambda t: jnp.array([0.0, 80e-9, 0.5e-12]), lambda t: jnp.array([0.0, 80e-9, -0.5e-12])],
-        q=e,
-        omega_0=100e12 * 2 * jnp.pi,
-        m=m_e,
+        d0=[0.0, 0.0, 1e-9], q=e, omega_0=100e12 * 2 * jnp.pi, m=m_e, origin=[0.0, 80e-9, 0.0]
     )
 
     num_steps = 40_000

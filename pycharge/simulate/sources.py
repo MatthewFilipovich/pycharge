@@ -13,11 +13,17 @@ class Source(NamedTuple):
     func_ode: Callable  # For each charge!
 
 
-def dipole_source(positions_0, q, omega_0, m):
+def dipole_source(d0, q, omega_0, m, origin=(0, 0, 0), polarized=True):
     if isinstance(m, (int, float)):
         m = (m, m)
     m_eff = m[0] * m[1] / (m[0] + m[1])
     gamma_0 = 1 / (4 * jnp.pi * epsilon_0) * 2 * q**2 * omega_0**2 / (3 * m_eff * c**3)
+    origin = jnp.array(origin)
+    d0 = jnp.array(d0)
+
+    polarization_direction = abs(d0 / jnp.linalg.norm(d0))
+
+    positions_0 = [lambda t: origin + d0 / 2, lambda t: origin - d0 / 2]
 
     def dipole_ode_fn(other_charges):
         electric_field_fn = (electric_field(other_charges)) if other_charges else 0
@@ -28,6 +34,9 @@ def dipole_source(positions_0, q, omega_0, m):
 
             dipole_origin = (r0 + r1) / 2
             E = electric_field_fn(*dipole_origin, time) if other_charges else 0
+
+            if polarized:
+                E = E * polarization_direction
 
             dipole_r = r0 - r1
             dipole_v = v0 - v1
