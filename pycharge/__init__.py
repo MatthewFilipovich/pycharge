@@ -10,6 +10,8 @@ from .electromagnetic_quantities import (
     vector_potential,
 )
 from .potentials_and_fields import potentials_and_fields
+from .simulate import simulate
+from .sources import Source, dipole_source
 
 __all__ = [
     "Charge",
@@ -20,4 +22,7 @@ __all__ = [
     "poynting_vector",
     "energy_density",
     "potentials_and_fields",
+    "simulate",
+    "Source",
+    "dipole_source",
 ]

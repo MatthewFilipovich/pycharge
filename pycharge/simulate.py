@@ -3,7 +3,7 @@ import jax.numpy as jnp
 
 from pycharge import Charge
 
-from .interpolate_position import interpolate_position
+from .utils import interpolate_position
 
 
 def simulate(sources, config=None, print_every_n_timesteps=100):
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from scipy.constants import e, m_e
 
-    from pycharge.simulate.sources import dipole_source
+    from pycharge.sources import dipole_source
 
     # jax.config.update("jax_enable_x64", True)
 
