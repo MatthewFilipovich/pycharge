@@ -10,7 +10,7 @@ from pycharge import Charge, electric_field
 
 class Source(NamedTuple):
     charges_0: Iterable[Charge]
-    func_ode: Callable  # For each charge!
+    ode_func: Callable
 
 
 def dipole_source(d0, q, omega_0, m, origin=(0, 0, 0), polarized=True):
@@ -25,32 +25,28 @@ def dipole_source(d0, q, omega_0, m, origin=(0, 0, 0), polarized=True):
 
     positions_0 = [lambda t: origin + d0 / 2, lambda t: origin - d0 / 2]
 
-    def dipole_ode_fn(other_charges):
+    def dipole_ode_fn(time, state, other_charges):
+        r0, v0 = state[0]
+        r1, v1 = state[1]
+
+        dipole_origin = (r0 + r1) / 2
         electric_field_fn = (electric_field(other_charges)) if other_charges else 0
+        E = electric_field_fn(*dipole_origin, time) if other_charges else 0
 
-        def fn(time, state):
-            r0, v0 = state[0]
-            r1, v1 = state[1]
+        if polarized:
+            E = E * polarization_direction
 
-            dipole_origin = (r0 + r1) / 2
-            E = electric_field_fn(*dipole_origin, time) if other_charges else 0
+        dipole_r = r0 - r1
+        dipole_v = v0 - v1
+        dipole_a = q / m_eff * E - gamma_0 * dipole_v - omega_0**2 * dipole_r
 
-            if polarized:
-                E = E * polarization_direction
+        dr0_dt = v0
+        dr1_dt = v1
+        dv0_dt = dipole_a / 2
+        dv1_dt = -dipole_a / 2
 
-            dipole_r = r0 - r1
-            dipole_v = v0 - v1
-            dipole_a = q / m_eff * E - gamma_0 * dipole_v - omega_0**2 * dipole_r
+        out = jnp.asarray([[dr0_dt, dv0_dt], [dr1_dt, dv1_dt]])
 
-            dr0_dt = v0
-            dr1_dt = v1
-            dv0_dt = dipole_a / 2
-            dv1_dt = -dipole_a / 2
+        return out
 
-            out = jnp.asarray([[dr0_dt, dv0_dt], [dr1_dt, dv1_dt]])
-
-            return out
-
-        return fn
-
-    return Source(charges_0=(Charge(positions_0[0], q), Charge(positions_0[1], -q)), func_ode=dipole_ode_fn)
+    return Source(charges_0=(Charge(positions_0[0], q), Charge(positions_0[1], -q)), ode_func=dipole_ode_fn)
