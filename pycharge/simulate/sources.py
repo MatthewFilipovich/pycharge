@@ -25,12 +25,12 @@ def dipole_source(d0, q, omega_0, m, origin=(0, 0, 0), polarized=True):
 
     positions_0 = [lambda t: origin + d0 / 2, lambda t: origin - d0 / 2]
 
-    def dipole_ode_fn(time, state, other_charges):
+    def dipole_ode_fn(time, state, other_charges, config):
         r0, v0 = state[0]
         r1, v1 = state[1]
 
         dipole_origin = (r0 + r1) / 2
-        electric_field_fn = (electric_field(other_charges)) if other_charges else 0
+        electric_field_fn = (electric_field(other_charges, config)) if other_charges else 0
         E = electric_field_fn(*dipole_origin, time) if other_charges else 0
 
         if polarized:

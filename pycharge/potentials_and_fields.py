@@ -1,6 +1,6 @@
 """This module defines the function for calculating the potentials and fields."""
 
-from typing import Callable, Iterable, Literal
+from typing import Callable, Iterable
 
 import jax
 import jax.numpy as jnp
@@ -10,6 +10,7 @@ from jax.typing import ArrayLike
 from scipy.constants import c, epsilon_0, pi
 
 from .charge import Charge
+from .config import Config, RootFindConfig
 
 
 def potentials_and_fields(
@@ -19,8 +20,7 @@ def potentials_and_fields(
     vector: bool = False,
     electric: bool = False,
     magnetic: bool = False,
-    field_component: Literal["total", "velocity", "acceleration"] = "total",
-    solver_config: dict | None = None,
+    config: Config | None = None,
 ) -> Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], dict[str, Array]]:
     """
     Returns a function to compute electromagnetic fields and potentials
@@ -32,9 +32,7 @@ def potentials_and_fields(
         vector: If True, compute vector potential A.
         electric: If True, compute electric field E.
         magnetic: If True, compute magnetic field B.
-        field_component: Specifies the component of the electric and magnetic field to compute:
-            'total', 'velocity', or 'acceleration'. Default is 'total'.
-        solver_config: A dictionary of keyword arguments passed to the root finder.
+        config: Configuration object with computation settings.
 
     Returns:
         A function that takes (x, y, z, t) arrays and returns a dictionary of quantities.
@@ -44,10 +42,15 @@ def potentials_and_fields(
     if not charges:
         raise ValueError("At least one charge must be provided.")
 
+    if config is None:
+        config = Config()
+    field_component = config.field_component
+    root_find_config = config.root_find
+
     if isinstance(charges, Charge):
         charges = [charges]
 
-    if field_component not in {"total", "velocity", "acceleration"}:
+    if field_component not in ("total", "velocity", "acceleration"):
         raise ValueError(
             f"Invalid field_component: {field_component}. Must be 'total', 'velocity', or 'acceleration'."
         )
@@ -56,14 +59,12 @@ def potentials_and_fields(
         if not isinstance(charge.position, Callable):
             raise ValueError("Each charge's position must be a callable function of time.")
 
-    solver_config = solver_config or {}
-
     # Precompute functions for each charge
     # TODO: replace for loop with jax.lax.scan or fori? CHECK jaxpr
     position_fns = [lambda t, c=charge: jnp.asarray(c.position(t)) for charge in charges]  # Convert to array
     velocity_fns = [jax.jacobian(pos_fn) for pos_fn in position_fns]
     acceleration_fns = [jax.jacobian(vel_fn) for vel_fn in velocity_fns]
-    source_time_fns = [source_time(charge, **solver_config) for charge in charges]
+    source_time_fns = [source_time(charge, root_find_config) for charge in charges]
     qs = jnp.array([charge.q for charge in charges])
 
     def potentials_and_fields_fn(x: ArrayLike, y: ArrayLike, z: ArrayLike, t: ArrayLike) -> dict[str, Array]:
@@ -154,21 +155,18 @@ def potentials_and_fields(
     return potentials_and_fields_fn
 
 
-def source_time(
-    charge: Charge, rtol: float = 0, atol: float = 1.48e-8, max_steps: int = 256
-) -> Callable[[Array, Array], Array]:
+def source_time(charge: Charge, root_find_config: RootFindConfig) -> Callable[[Array, Array], Array]:
     """
     Returns a function to compute the retarded time for a given field point and observation time.
 
     Args:
         charge: Charge object containing the trajectory.
-        rtol: Relative tolerance for the solver.
-        atol: Absolute tolerance for the solver.
-        max_steps: Maximum number of solver iterations.
+        root_finder_config: Configuration for the root finder.
 
     Returns:
         Function that takes (r, t) and returns the retarded time tr.
     """
+    rtol, atol, max_steps = root_find_config
 
     def source_time_fn(r: Array, t: Array) -> Array:
         """
