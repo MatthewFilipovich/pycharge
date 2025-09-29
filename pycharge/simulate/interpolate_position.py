@@ -7,7 +7,6 @@ import jax.numpy as jnp
 def interpolate_position(ts, position_0: Callable, position_array, velocity_array, default_nan_position=None):
     t_start = ts[0]
     t_end = ts[-1]
-    dt = ts[1] - ts[0]
     nan_value = default_nan_position if default_nan_position is not None else jnp.full(3, jnp.nan)
 
     def before_start(t):
@@ -17,13 +16,14 @@ def interpolate_position(ts, position_0: Callable, position_array, velocity_arra
         return nan_value
 
     def interpolate(t):
-        t_idx = ((t - t_start) / dt).astype(int)
+        t_idx = jnp.searchsorted(ts, t, side="right") - 1
 
         pos0 = position_array[t_idx]
         vel0 = velocity_array[t_idx]
         pos1 = position_array[t_idx + 1]
         vel1 = velocity_array[t_idx + 1]
 
+        dt = ts[t_idx + 1] - ts[t_idx]
         dpos = pos1 - pos0
 
         a = (vel0 + vel1) * dt - 2 * dpos
