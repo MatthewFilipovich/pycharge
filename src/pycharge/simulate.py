@@ -1,9 +1,8 @@
 import jax
 import jax.numpy as jnp
 
-from pycharge import Charge
-
-from .utils import interpolate_position
+from pycharge.charge import Charge
+from pycharge.utils import interpolate_position
 
 
 def simulate(sources, config=None, print_every_n_timesteps=100):

@@ -1,6 +1,7 @@
 """PyCharge: Differentiable electromagnetics simulation library for moving point charges built on JAX."""
 
 from .charge import Charge
+from .config import Config, RootFindConfig
 from .electromagnetic_quantities import (
     electric_field,
     energy_density,
@@ -25,4 +26,6 @@ __all__ = [
     "simulate",
     "Source",
     "dipole_source",
+    "Config",
+    "RootFindConfig",
 ]

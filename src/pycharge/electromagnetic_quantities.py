@@ -7,10 +7,10 @@ from jax.typing import ArrayLike
 from scipy.constants import epsilon_0, mu_0
 from typing_extensions import TypeAlias
 
-from .charge import Charge
-from .config import Config
-from .potentials_and_fields import potentials_and_fields
-from .utils import cross_1d, dot_1d
+from pycharge.charge import Charge
+from pycharge.config import Config
+from pycharge.potentials_and_fields import potentials_and_fields
+from pycharge.utils import cross_1d, dot_1d
 
 SpaceTimeFn: TypeAlias = Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], Array]
 FieldComponent: TypeAlias = Literal["total", "velocity", "acceleration"]

@@ -9,8 +9,8 @@ from jax import Array
 from jax.typing import ArrayLike
 from scipy.constants import c, epsilon_0, pi
 
-from .charge import Charge
-from .config import Config, RootFindConfig
+from pycharge.charge import Charge
+from pycharge.config import Config, RootFindConfig
 
 
 def potentials_and_fields(

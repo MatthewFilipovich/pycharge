@@ -5,7 +5,8 @@ from typing import Callable, Iterable, NamedTuple
 import jax.numpy as jnp
 from scipy.constants import c, epsilon_0
 
-from pycharge import Charge, electric_field
+from pycharge.charge import Charge
+from pycharge.electromagnetic_quantities import electric_field
 
 
 class Source(NamedTuple):
