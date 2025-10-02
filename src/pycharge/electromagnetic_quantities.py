@@ -1,24 +1,20 @@
 """This module defines functions to calculate electromagnetic quantities."""
 
-from typing import Callable, Iterable, Literal
+from typing import Iterable
 
 from jax import Array
-from jax.typing import ArrayLike
 from scipy.constants import epsilon_0, mu_0
-from typing_extensions import TypeAlias
 
 from pycharge.charge import Charge
 from pycharge.config import Config
 from pycharge.potentials_and_fields import potentials_and_fields
+from pycharge.types import SpaceTimeFn
 from pycharge.utils import cross_1d, dot_1d
 
-SpaceTimeFn: TypeAlias = Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], Array]
-FieldComponent: TypeAlias = Literal["total", "velocity", "acceleration"]
 
-
-def _make_fn(charges: Iterable[Charge], field_name: str, config: Config | None) -> SpaceTimeFn:
-    fn = potentials_and_fields(charges, **{field_name: True}, config=config)
-    return lambda x, y, z, t: fn(x, y, z, t)[field_name]
+def _make_fn(charges: Iterable[Charge], quantity: str, config: Config | None) -> SpaceTimeFn:
+    fn = potentials_and_fields(charges, **{quantity: True}, config=config)
+    return lambda x, y, z, t: fn(x, y, z, t)[quantity]
 
 
 def scalar_potential(charges: Iterable[Charge], config: Config | None = None) -> SpaceTimeFn:
@@ -28,17 +24,17 @@ def scalar_potential(charges: Iterable[Charge], config: Config | None = None) ->
 
 def vector_potential(charges: Iterable[Charge], config: Config | None = None) -> SpaceTimeFn:
     """Returns vector potential A(r, t) from a moving point charge."""
-    return _make_fn(charges, "vector", config=config)
+    return _make_fn(charges, "vector", config)
 
 
 def electric_field(charges: Iterable[Charge], config: Config | None = None) -> SpaceTimeFn:
     """Returns electric field E(r, t) from a moving point charge."""
-    return _make_fn(charges, "electric", config=config)
+    return _make_fn(charges, "electric", config)
 
 
 def magnetic_field(charges: Iterable[Charge], config: Config | None = None) -> SpaceTimeFn:
     """Returns magnetic field B(r, t) from a moving point charge."""
-    return _make_fn(charges, "magnetic", config=config)
+    return _make_fn(charges, "magnetic", config)
 
 
 def poynting_vector(charges: Iterable[Charge], config: Config | None = None) -> SpaceTimeFn:

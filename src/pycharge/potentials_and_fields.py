@@ -10,7 +10,7 @@ from jax.typing import ArrayLike
 from scipy.constants import c, epsilon_0, pi
 
 from pycharge.charge import Charge
-from pycharge.config import Config, RootFindConfig
+from pycharge.config import Config
 
 
 def potentials_and_fields(
@@ -38,25 +38,21 @@ def potentials_and_fields(
         A function that takes (x, y, z, t) arrays and returns a dictionary of quantities.
     """
 
-    # Ensure charges is an iterable
-    if not charges:
+    charges = [charges] if isinstance(charges, Charge) else list(charges)
+
+    if len(charges) == 0:
         raise ValueError("At least one charge must be provided.")
 
     if config is None:
         config = Config()
-    field_component = config.field_component
-    root_find_config = config.root_find
 
-    if isinstance(charges, Charge):
-        charges = [charges]
-
-    if field_component not in ("total", "velocity", "acceleration"):
+    if config.field_component not in ("total", "velocity", "acceleration"):
         raise ValueError(
-            f"Invalid field_component: {field_component}. Must be 'total', 'velocity', or 'acceleration'."
+            f"Invalid field_component: {config.field_component}. Must be 'total', 'velocity', or 'acceleration'."
         )
 
     for charge in charges:
-        if not isinstance(charge.position, Callable):
+        if not callable(charge.position):
             raise ValueError("Each charge's position must be a callable function of time.")
 
     # Precompute functions for each charge
@@ -64,7 +60,7 @@ def potentials_and_fields(
     position_fns = [lambda t, c=charge: jnp.asarray(c.position(t)) for charge in charges]  # Convert to array
     velocity_fns = [jax.jacobian(pos_fn) for pos_fn in position_fns]
     acceleration_fns = [jax.jacobian(vel_fn) for vel_fn in velocity_fns]
-    source_time_fns = [source_time(charge, root_find_config) for charge in charges]
+    source_time_fns = [source_time(charge, config) for charge in charges]
     qs = jnp.array([charge.q for charge in charges])
 
     def potentials_and_fields_fn(x: ArrayLike, y: ArrayLike, z: ArrayLike, t: ArrayLike) -> dict[str, Array]:
@@ -125,9 +121,12 @@ def potentials_and_fields(
                 n_minus_beta = n - beta
 
                 E = 0
-                if field_component in ("total", "velocity"):  # Electric field from velocity term
+                if config.field_component in ("total", "velocity"):  # Electric field from velocity term
                     E += n_minus_beta / (gamma_sq_inv * one_minus_n_dot_beta_cubed * R**2)
-                if field_component in ("total", "acceleration"):  # Electric field from acceleration term
+                if config.field_component in (
+                    "total",
+                    "acceleration",
+                ):  # Electric field from acceleration term
                     E += jnp.cross(n, jnp.cross(n_minus_beta, beta_dot)) / (
                         c * one_minus_n_dot_beta_cubed * R
                     )
@@ -155,7 +154,7 @@ def potentials_and_fields(
     return potentials_and_fields_fn
 
 
-def source_time(charge: Charge, root_find_config: RootFindConfig) -> Callable[[Array, Array], Array]:
+def source_time(charge: Charge, config: Config) -> Callable[[Array, Array], Array]:
     """
     Returns a function to compute the retarded time for a given field point and observation time.
 
@@ -166,19 +165,18 @@ def source_time(charge: Charge, root_find_config: RootFindConfig) -> Callable[[A
     Returns:
         Function that takes (r, t) and returns the retarded time tr.
     """
-    rtol, atol, max_steps = root_find_config
 
     def source_time_fn(r: Array, t: Array) -> Array:
         """
         Solve for tr such that |r - r_src(tr)| = c * (t - tr).
         """
 
-        def fn(tr, args):
+        def fn(tr, _):
             return jnp.linalg.norm(r - jnp.asarray(charge.position(tr))) - c * (t - tr)
 
-        solver = optx.Newton(rtol, atol)
+        solver = optx.Newton(config.newton_rtol, config.newton_atol)
         t_init = t - jnp.linalg.norm(r - jnp.asarray(charge.position(t))) / c  # Initial guess
-        result = optx.root_find(fn, solver, t_init, max_steps=max_steps)
+        result = optx.root_find(fn, solver, t_init, max_steps=config.root_find_max_steps)
         return result.value
 
     return source_time_fn

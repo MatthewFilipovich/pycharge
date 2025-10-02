@@ -1,12 +1,10 @@
-from typing import Literal, NamedTuple
+from typing import NamedTuple
 
-
-class RootFindConfig(NamedTuple):
-    rtol: float = 0.0
-    atol: float = 1.48e-8
-    max_steps: int = 256
+from pycharge.types import FieldComponent
 
 
 class Config(NamedTuple):
-    field_component: Literal["total", "velocity", "acceleration"] = "total"
-    root_find: RootFindConfig = RootFindConfig()
+    field_component: FieldComponent = "total"
+    newton_rtol: float = 0.0
+    newton_atol: float = 1.48e-8
+    root_find_max_steps: int = 256

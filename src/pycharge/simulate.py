@@ -1,13 +1,18 @@
+from typing import Sequence
+
 import jax
 import jax.numpy as jnp
+from jax import Array
 
 from pycharge.charge import Charge
+from pycharge.config import Config
+from pycharge.sources import Source
 from pycharge.utils import interpolate_position
 
 
-def simulate(sources, config=None, print_every_n_timesteps=100):
-    def simulate_fn(ts):
-        def create_initial_state(source):
+def simulate(sources: Sequence[Source], config: Config | None = None, print_every_n_timesteps: int = 100):
+    def simulate_fn(ts: Array):
+        def create_initial_state(source: Source) -> Array:
             state_array = jnp.full([len(ts), len(source.charges_0), 2, 3], jnp.nan)
 
             for charge_idx, charge in enumerate(source.charges_0):
@@ -15,8 +20,8 @@ def simulate(sources, config=None, print_every_n_timesteps=100):
                 state_array = state_array.at[0, charge_idx].set([pos0, vel0])
             return state_array
 
-        def time_step_body(time_idx, state):
-            def create_charge(source_idx, charge_idx):
+        def time_step_body(time_idx: int, state: tuple[Array, ...]) -> tuple[Array, ...]:
+            def create_charge(source_idx: int, charge_idx: int) -> Charge:
                 charge0 = sources[source_idx].charges_0[charge_idx]
                 position_0 = charge0.position
                 position_array = state[source_idx][:, charge_idx, 0]

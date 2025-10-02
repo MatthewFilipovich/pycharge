@@ -1,6 +1,6 @@
 """This module defines the Source class."""
 
-from typing import Callable, Iterable, NamedTuple
+from typing import Callable, NamedTuple, Sequence
 
 import jax.numpy as jnp
 from scipy.constants import c, epsilon_0
@@ -10,7 +10,7 @@ from pycharge.electromagnetic_quantities import electric_field
 
 
 class Source(NamedTuple):
-    charges_0: Iterable[Charge]
+    charges_0: Sequence[Charge]
     ode_func: Callable
 
 
@@ -30,9 +30,8 @@ def dipole_source(d0, q, omega_0, m, origin=(0, 0, 0), polarized=True):
         r0, v0 = state[0]
         r1, v1 = state[1]
 
-        dipole_origin = (r0 + r1) / 2
-        electric_field_fn = (electric_field(other_charges, config)) if other_charges else 0
-        E = electric_field_fn(*dipole_origin, time) if other_charges else 0
+        x, y, z = (r0 + r1) / 2
+        E = electric_field(other_charges, config)(x, y, z, time) if other_charges else 0
 
         if polarized:
             E = E * polarization_direction

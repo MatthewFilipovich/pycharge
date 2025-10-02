@@ -1,13 +1,19 @@
 """This module defines utility functions."""
 
-from typing import Callable
-
 import jax
 import jax.numpy as jnp
 from jax import Array
 
+from pycharge.types import PositionFn
 
-def interpolate_position(ts, position_0: Callable, position_array, velocity_array, default_nan_position=None):
+
+def interpolate_position(
+    ts: Array,
+    position_0: PositionFn,
+    position_array: Array,
+    velocity_array: Array,
+    default_nan_position: Array | None = None,
+) -> PositionFn:
     t_start = ts[0]
     t_end = ts[-1]
     nan_value = default_nan_position if default_nan_position is not None else jnp.full(3, jnp.nan)
