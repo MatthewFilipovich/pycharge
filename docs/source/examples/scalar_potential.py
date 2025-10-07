@@ -4,14 +4,13 @@ Scalar potential
 """
 
 # %% Import necessary libraries
-from time import time
 
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from scipy.constants import e
 
-from pycharge import Charge, scalar_potential
+from pycharge import Charge, quantities
 
 
 # %% Define the position functions of the two charges
@@ -31,7 +30,7 @@ def position2(t):
 
 # Create a list of charges and JIT compile the scalar potential function
 charges = [Charge(position1, e), Charge(position2, 0.2 * e)]
-potentials_fn = jax.jit(scalar_potential(charges))
+quantities_fn = jax.jit(quantities(charges))
 # %% Define the observation grid in the x-y plane at z=0 and t=0
 x = jnp.linspace(-1e-9, 1e-9, int(1e3))
 y = jnp.linspace(-1e-9, 1e-9, int(1e3))
@@ -42,10 +41,7 @@ X, Y, Z, T = jnp.meshgrid(x, y, z, t, indexing="ij")
 
 
 # %% Calculate the scalar potential at grid points
-for _ in range(10):
-    start_t = time()
-    scalar_potential_grid = potentials_fn(X, Y, Z, T)
-    print(time() - start_t)
+scalar_potential_grid = quantities_fn(X, Y, Z, T).scalar
 
 
 # %% Plot the potential along the observation grid

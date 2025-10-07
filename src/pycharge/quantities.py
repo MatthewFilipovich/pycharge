@@ -1,6 +1,6 @@
 """This module defines the function for calculating the potentials and fields."""
 
-from typing import Callable, Iterable
+from typing import Callable, Iterable, NamedTuple
 
 import jax
 import jax.numpy as jnp
@@ -13,25 +13,22 @@ from pycharge.charge import Charge
 from pycharge.config import Config
 
 
-def potentials_and_fields(
-    charges: Iterable[Charge],
-    *,
-    scalar: bool = False,
-    vector: bool = False,
-    electric: bool = False,
-    magnetic: bool = False,
-    config: Config | None = None,
-) -> Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], dict[str, Array]]:
+class Quantities(NamedTuple):
+    scalar: Array
+    vector: Array
+    electric: Array
+    magnetic: Array
+
+
+def quantities(
+    charges: Iterable[Charge], config: Config | None = None
+) -> Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], Quantities]:
     """
     Returns a function to compute electromagnetic fields and potentials
     from moving point charges at given spacetime points.
 
     Args:
         charges: An iterable containing Charge objects.
-        scalar: If True, compute scalar potential φ.
-        vector: If True, compute vector potential A.
-        electric: If True, compute electric field E.
-        magnetic: If True, compute magnetic field B.
         config: Configuration object with computation settings.
 
     Returns:
@@ -39,12 +36,10 @@ def potentials_and_fields(
     """
 
     charges = [charges] if isinstance(charges, Charge) else list(charges)
+    config = Config() if config is None else config
 
     if len(charges) == 0:
         raise ValueError("At least one charge must be provided.")
-
-    if config is None:
-        config = Config()
 
     if config.field_component not in ("total", "velocity", "acceleration"):
         raise ValueError(
@@ -55,15 +50,13 @@ def potentials_and_fields(
         if not callable(charge.position):
             raise ValueError("Each charge's position must be a callable function of time.")
 
-    # Precompute functions for each charge
-    # TODO: replace for loop with jax.lax.scan or fori? CHECK jaxpr
     position_fns = [lambda t, c=charge: jnp.asarray(c.position(t)) for charge in charges]  # Convert to array
     velocity_fns = [jax.jacobian(pos_fn) for pos_fn in position_fns]
     acceleration_fns = [jax.jacobian(vel_fn) for vel_fn in velocity_fns]
     source_time_fns = [source_time(charge, config) for charge in charges]
     qs = jnp.array([charge.q for charge in charges])
 
-    def potentials_and_fields_fn(x: ArrayLike, y: ArrayLike, z: ArrayLike, t: ArrayLike) -> dict[str, Array]:
+    def quantities_fn(x: ArrayLike, y: ArrayLike, z: ArrayLike, t: ArrayLike) -> Quantities:
         """
         Compute scalar and vector potentials, and electric and magnetic fields at
         spatial coordinates (x, y, z) and time t.
@@ -79,65 +72,19 @@ def potentials_and_fields(
         r = jnp.stack([x, y, z], axis=-1)  # Stack into (..., 3)
         r_flat, t_flat = r.reshape(-1, 3), t.ravel()  # Flatten for vmap
 
-        quantities_flat = jax.vmap(calculate_total_sources)(r_flat, t_flat)
-        return {  # Reshape back to original shape
-            key: value.reshape(x.shape) if key == "scalar" else value.reshape(*x.shape, 3)
-            for key, value in quantities_flat.items()
-        }
+        φ_flat, A_flat, E_flat, B_flat = jax.vmap(calculate_total_sources)(r_flat, t_flat)
 
-    def calculate_total_sources(r: Array, t: Array) -> dict[str, Array]:
+        return Quantities(
+            φ_flat.reshape(x.shape),
+            A_flat.reshape(*x.shape, 3),
+            E_flat.reshape(*x.shape, 3),
+            B_flat.reshape(*x.shape, 3),
+        )
+
+    def calculate_total_sources(r: Array, t: Array) -> tuple:
         """
         Computes the total fields at a single point (r, t) by summing contributions from all charges.
         """
-
-        def calculate_individual_source(
-            r_src: Array, v_src: Array, a_src: Array, q: Array
-        ) -> dict[str, Array]:
-            """
-            Computes the fields from a single charge at a single point (r, t).
-            """
-
-            R = jnp.linalg.norm(r - r_src)  # Distance from source to observation point
-            n = (r - r_src) / R  # Unit vector from source to observation
-            beta = v_src / c  # Velocity normalized to speed of light
-            beta_dot = a_src / c  # Acceleration normalized
-            one_minus_n_dot_beta = 1 - jnp.dot(n, beta)  # (1 - n · β)
-            coeff = q / (4 * pi * epsilon_0)  # Common prefactor
-            quantities = {}
-
-            # Potentials
-            if scalar or vector:
-                phi = coeff / (one_minus_n_dot_beta * R)
-
-                if scalar:
-                    quantities["scalar"] = phi
-                if vector:
-                    quantities["vector"] = beta * phi / c
-
-            # Fields
-            if electric or magnetic:
-                gamma_sq_inv = 1 - jnp.dot(beta, beta)  # 1/γ²
-                one_minus_n_dot_beta_cubed = one_minus_n_dot_beta**3
-                n_minus_beta = n - beta
-
-                E = 0
-                if config.field_component in ("total", "velocity"):  # Electric field from velocity term
-                    E += n_minus_beta / (gamma_sq_inv * one_minus_n_dot_beta_cubed * R**2)
-                if config.field_component in (
-                    "total",
-                    "acceleration",
-                ):  # Electric field from acceleration term
-                    E += jnp.cross(n, jnp.cross(n_minus_beta, beta_dot)) / (
-                        c * one_minus_n_dot_beta_cubed * R
-                    )
-                E *= coeff
-
-                if electric:
-                    quantities["electric"] = E
-                if magnetic:
-                    quantities["magnetic"] = jnp.cross(n, E) / c
-
-            return quantities
 
         # Solve for retarded times for each charge
         t_srcs = jnp.stack([fn(r, t) for fn in source_time_fns])
@@ -147,11 +94,49 @@ def potentials_and_fields(
         a_srcs = jnp.stack([acc_fn(tr) for acc_fn, tr in zip(acceleration_fns, t_srcs)])
 
         # Compute individual contributions
-        individual_quantities = jax.vmap(calculate_individual_source)(r_srcs, v_srcs, a_srcs, qs)
+        vmap_calculate_individual_source = jax.vmap(calculate_individual_source, in_axes=(0, 0, 0, 0, None))
+        individual_quantities = vmap_calculate_individual_source(r_srcs, v_srcs, a_srcs, qs, r)
         # Sum contributions from all charges
-        return {key: jnp.sum(value, axis=0) for key, value in individual_quantities.items()}
+        summed_quantities = tuple(jnp.sum(value, axis=0) for value in individual_quantities)
 
-    return potentials_and_fields_fn
+        return summed_quantities
+
+    def calculate_individual_source(r_src: Array, v_src: Array, a_src: Array, q: Array, r: Array) -> tuple:
+        """
+        Computes the fields from a single charge at a single point (r, t).
+        """
+
+        R = jnp.linalg.norm(r - r_src)  # Distance from source to observation point
+        n = (r - r_src) / R  # Unit vector from source to observation
+        beta = v_src / c  # Velocity normalized to speed of light
+        beta_dot = a_src / c  # Acceleration normalized
+        one_minus_n_dot_beta = 1 - jnp.dot(n, beta)  # (1 - n · β)
+        coeff = q / (4 * pi * epsilon_0)  # Common prefactor
+        φ = coeff / (one_minus_n_dot_beta * R)
+
+        scalar = φ
+        vector = beta * φ / c
+
+        # Fields
+        gamma_sq_inv = 1 - jnp.dot(beta, beta)  # 1/γ²
+        one_minus_n_dot_beta_cubed = one_minus_n_dot_beta**3
+        n_minus_beta = n - beta
+
+        E = 0
+        # Electric field from velocity term
+        if config.field_component in ("total", "velocity"):
+            E += n_minus_beta / (gamma_sq_inv * one_minus_n_dot_beta_cubed * R**2)
+        # Electric field from acceleration term
+        if config.field_component in ("total", "acceleration"):
+            E += jnp.cross(n, jnp.cross(n_minus_beta, beta_dot)) / (c * one_minus_n_dot_beta_cubed * R)
+        E *= coeff
+
+        electric = E
+        magnetic = jnp.cross(n, E) / c
+
+        return (scalar, vector, electric, magnetic)
+
+    return quantities_fn
 
 
 def source_time(charge: Charge, config: Config) -> Callable[[Array, Array], Array]:

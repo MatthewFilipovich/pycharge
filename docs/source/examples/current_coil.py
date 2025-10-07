@@ -12,11 +12,11 @@ Current coil
 
 import jax
 import jax.numpy as jnp
-import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib import colors
 from scipy.constants import e
 
-from pycharge import Charge, potentials_and_fields
+from pycharge import Charge, quantities
 
 # jax.config.update("jax_enable_x64", True)
 
@@ -50,19 +50,19 @@ t = jnp.array([0.0])
 
 X, Y, Z, T = jnp.meshgrid(x, y, z, t, indexing="ij")
 
-fn = jax.jit(potentials_and_fields(charges, scalar=True, vector=True, electric=True, magnetic=True))
+fn = jax.jit(quantities(charges))
 output = fn(X, Y, Z, T)
 
 # %% Plot the potential along the observation grid
 for key in ["scalar", "electric", "vector", "magnetic"]:
     if key == "scalar":
         fig, ax = plt.subplots()
-        out = output[key].squeeze()
+        out = getattr(output, key).squeeze()
         if out.max() == 0:
             norm = None
         else:
             vmax = jnp.max(out).item()
-            norm = mpl.colors.SymLogNorm(linthresh=vmax * 1e-5, linscale=1, vmin=-vmax, vmax=vmax)
+            norm = colors.SymLogNorm(linthresh=vmax * 1e-5, linscale=1, vmin=-vmax, vmax=vmax)
 
         im = ax.imshow(out, origin="lower", cmap="RdBu_r", norm=norm)
         plt.colorbar(im, ax=ax)
@@ -70,13 +70,13 @@ for key in ["scalar", "electric", "vector", "magnetic"]:
     else:
         fig, ax = plt.subplots(1, 3, figsize=(15, 5))
         for i in range(3):
-            out = output[key].squeeze()[..., i]
+            out = getattr(output, key).squeeze()[..., i]
 
             if out.max() == 0:
                 norm = None
             else:
                 vmax = jnp.max(out).item()
-                norm = mpl.colors.SymLogNorm(linthresh=vmax * 1e-5, linscale=1, vmin=-vmax, vmax=vmax)
+                norm = colors.SymLogNorm(linthresh=vmax * 1e-5, linscale=1, vmin=-vmax, vmax=vmax)
 
             im = ax[i].imshow(out, origin="lower", cmap="RdBu_r", norm=norm)
             plt.colorbar(im, ax=ax[i])

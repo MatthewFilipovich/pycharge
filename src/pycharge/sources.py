@@ -5,8 +5,8 @@ from typing import Callable, NamedTuple, Sequence
 import jax.numpy as jnp
 from scipy.constants import c, epsilon_0
 
+from pycharge import quantities
 from pycharge.charge import Charge
-from pycharge.electromagnetic_quantities import electric_field
 
 
 class Source(NamedTuple):
@@ -31,7 +31,7 @@ def dipole_source(d0, q, omega_0, m, origin=(0, 0, 0), polarized=True):
         r1, v1 = state[1]
 
         x, y, z = (r0 + r1) / 2
-        E = electric_field(other_charges, config)(x, y, z, time) if other_charges else 0
+        E = quantities(other_charges, config)(x, y, z, time).electric if other_charges else 0
 
         if polarized:
             E = E * polarization_direction

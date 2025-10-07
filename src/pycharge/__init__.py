@@ -2,29 +2,8 @@
 
 from .charge import Charge
 from .config import Config
-from .electromagnetic_quantities import (
-    electric_field,
-    energy_density,
-    magnetic_field,
-    poynting_vector,
-    scalar_potential,
-    vector_potential,
-)
-from .potentials_and_fields import potentials_and_fields
+from .quantities import quantities
 from .simulate import simulate
 from .sources import Source, dipole_source
 
-__all__ = [
-    "Charge",
-    "scalar_potential",
-    "vector_potential",
-    "electric_field",
-    "magnetic_field",
-    "poynting_vector",
-    "energy_density",
-    "potentials_and_fields",
-    "simulate",
-    "Source",
-    "dipole_source",
-    "Config",
-]
+__all__ = ["Charge", "quantities", "simulate", "Source", "dipole_source", "Config"]

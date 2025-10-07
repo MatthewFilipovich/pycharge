@@ -1,19 +1,20 @@
 """This module defines utility functions."""
 
+from typing import Callable, Sequence
+
 import jax
 import jax.numpy as jnp
 from jax import Array
-
-from pycharge.types import PositionFn
+from jax.typing import ArrayLike
 
 
 def interpolate_position(
     ts: Array,
-    position_0: PositionFn,
+    position_0: Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]],
     position_array: Array,
     velocity_array: Array,
     default_nan_position: Array | None = None,
-) -> PositionFn:
+) -> Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]]:
     t_start = ts[0]
     t_end = ts[-1]
     nan_value = default_nan_position if default_nan_position is not None else jnp.full(3, jnp.nan)
@@ -51,17 +52,3 @@ def interpolate_position(
     return lambda t: jax.lax.cond(
         t < t_start, before_start, lambda t: jax.lax.cond(t_end < t, after_end, interpolate, t), t
     )
-
-
-def cross_1d(a: Array, b: Array) -> Array:
-    """Computes the cross product of two vectors."""
-    a_flat, b_flat = a.reshape(-1, 3), b.reshape(-1, 3)  # Flatten for vmap
-    out_shape = a.shape  # Get the output shape
-    return jax.vmap(jnp.cross)(a_flat, b_flat).reshape(out_shape)
-
-
-def dot_1d(a: Array, b: Array) -> Array:
-    """Computes the dot product of two vectors."""
-    a_flat, b_flat = a.reshape(-1, 3), b.reshape(-1, 3)  # Flatten for vmap
-    out_shape = a.shape[:-1]  # Get the output shape
-    return jax.vmap(jnp.dot)(a_flat, b_flat).reshape(out_shape)
