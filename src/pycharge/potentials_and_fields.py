@@ -1,7 +1,6 @@
 """This module defines the function for calculating the potentials and fields."""
 
-from dataclasses import dataclass
-from typing import Callable, Iterable
+from typing import Callable, Iterable, NamedTuple
 
 import jax
 import jax.numpy as jnp
@@ -13,8 +12,7 @@ from scipy.constants import c, epsilon_0, pi
 from pycharge.charge import Charge
 
 
-@dataclass(frozen=True)
-class Quantities:
+class Quantities(NamedTuple):
     scalar: Array
     vector: Array
     electric: Array
@@ -26,7 +24,7 @@ class Quantities:
     magnetic_term2: Array
 
 
-def quantities(
+def potentials_and_fields(
     charges: Iterable[Charge],
 ) -> Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], Quantities]:
     """

@@ -6,7 +6,7 @@ from typing import Callable, Sequence
 import jax.numpy as jnp
 from scipy.constants import c, epsilon_0
 
-from pycharge import quantities
+from pycharge import potentials_and_fields
 from pycharge.charge import Charge
 
 
@@ -33,7 +33,7 @@ def dipole_source(d0, q, omega_0, m, origin=(0, 0, 0), polarized=True):
         r1, v1 = state[1]
 
         x, y, z = (r0 + r1) / 2
-        E = quantities(other_charges)(x, y, z, time).electric if other_charges else 0
+        E = potentials_and_fields(other_charges)(x, y, z, time).electric if other_charges else 0
 
         if polarized:
             E = E * polarization_direction

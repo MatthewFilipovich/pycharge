@@ -24,7 +24,7 @@ extensions = [
 ]
 
 autoapi_member_order = "alphabetical"
-autoapi_dirs = ["../../pycharge"]
+autoapi_dirs = ["../../src/pycharge"]
 autoapi_type = "python"
 autoapi_add_toctree_entry = False
 autodoc_typehints = "description"

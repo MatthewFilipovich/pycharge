@@ -10,7 +10,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from scipy.constants import e
 
-from pycharge import Charge, quantities
+from pycharge import Charge, potentials_and_fields
 
 
 # %% Define the position functions of the two charges
@@ -30,7 +30,7 @@ def position2(t):
 
 # Create a list of charges and JIT compile the scalar potential function
 charges = [Charge(position1, e), Charge(position2, 0.2 * e)]
-quantities_fn = jax.jit(quantities(charges))
+quantities_fn = jax.jit(potentials_and_fields(charges))
 # %% Define the observation grid in the x-y plane at z=0 and t=0
 x = jnp.linspace(-1e-9, 1e-9, int(1e3))
 y = jnp.linspace(-1e-9, 1e-9, int(1e3))

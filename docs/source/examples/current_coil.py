@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 from scipy.constants import e
 
-from pycharge import Charge, quantities
+from pycharge import Charge, potentials_and_fields
 
 # jax.config.update("jax_enable_x64", True)
 
@@ -50,7 +50,7 @@ t = jnp.array([0.0])
 
 X, Y, Z, T = jnp.meshgrid(x, y, z, t, indexing="ij")
 
-fn = jax.jit(quantities(charges))
+fn = jax.jit(potentials_and_fields(charges))
 output = fn(X, Y, Z, T)
 
 # %% Plot the potential along the observation grid

@@ -33,10 +33,10 @@ def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
             velocity_array = state[source_idx][:, charge_idx, 1]
             nan_position_fill_value = state[source_idx][time_idx, charge_idx, 0]
 
-            position = interpolate_position(
+            updated_position = interpolate_position(
                 ts, position_array, velocity_array, position_0, nan_position_fill_value
             )
-            return replace(charge0, position=position)
+            return replace(charge0, position=updated_position)
 
         if print_every_n_timesteps:
             jax.lax.cond(
