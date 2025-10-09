@@ -38,10 +38,10 @@ def simulate(sources: Sequence[Source], config: Config | None = None, print_ever
             position_0 = charge0.position
             position_array = state[source_idx][:, charge_idx, 0]
             velocity_array = state[source_idx][:, charge_idx, 1]
-            default_nan_position = state[source_idx][time_idx, charge_idx, 0]
+            nan_position_fill_value = state[source_idx][time_idx, charge_idx, 0]
 
             position = interpolate_position(
-                ts, position_0, position_array, velocity_array, default_nan_position
+                ts, position_array, velocity_array, position_0, nan_position_fill_value
             )
             q = charge0.q
 

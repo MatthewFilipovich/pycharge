@@ -10,20 +10,21 @@ from jax.typing import ArrayLike
 
 def interpolate_position(
     ts: Array,
-    position_0: Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]],
     position_array: Array,
     velocity_array: Array,
-    default_nan_position: Array | None = None,
+    position_0: Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]],
+    nan_position_fill_value: Array | None = None,
 ) -> Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]]:
     t_start = ts[0]
     t_end = ts[-1]
-    nan_value = default_nan_position if default_nan_position is not None else jnp.full(3, jnp.nan)
+    if nan_position_fill_value is None:
+        nan_position_fill_value = jnp.full(3, jnp.nan)
 
     def before_start(t):
         return position_0(t)
 
     def after_end(t):
-        return nan_value
+        return nan_position_fill_value
 
     def interpolate(t):
         t_idx = jnp.searchsorted(ts, t, side="right") - 1
@@ -44,8 +45,7 @@ def interpolate_position(
         t_norm = (t - ts[t_idx]) / dt
         position = a * t_norm**3 + b * t_norm**2 + c * t_norm + d
 
-        if default_nan_position is not None:
-            position = jnp.where(jnp.any(jnp.isnan(pos1)), nan_value, position)
+        position = jnp.where(jnp.any(jnp.isnan(position)), nan_position_fill_value, position)
 
         return position
 
