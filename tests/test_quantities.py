@@ -21,3 +21,6 @@ def test_stationary_charge():
 
     assert jnp.allclose(scalar_expected, scalar_pycharge)
     assert jnp.allclose(electric_expected, electric_pycharge)
+
+
+# TODO: Ensure I compare v1 and v2 fields and potentials to check for any errors!

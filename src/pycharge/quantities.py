@@ -37,7 +37,8 @@ def quantities(
         charges: An iterable containing Charge objects.
 
     Returns:
-        A function that takes (x, y, z, t) arrays and returns a dictionary of quantities.
+        A function that takes (x, y, z, t) arrays and returns a Quantities object
+        with scalar and vector potentials, and electric and magnetic fields.
     """
 
     charges = [charges] if isinstance(charges, Charge) else list(charges)
@@ -113,25 +114,23 @@ def quantities(
         """
         R = jnp.linalg.norm(r - r_src)  # Distance from source to observation point
         n = (r - r_src) / R  # Unit vector from source to observation
-        beta = v_src / c  # Velocity normalized to speed of light
-        beta_dot = a_src / c  # Acceleration normalized
-        one_minus_n_dot_beta = 1 - jnp.dot(n, beta)  # (1 - n · β)
-        gamma_sq_inv = 1 - jnp.dot(beta, beta)  # 1/γ²
-        one_minus_n_dot_beta_cubed = one_minus_n_dot_beta**3
-        n_minus_beta = n - beta
-        coeff = q / (4 * pi * epsilon_0)  # Common prefactor
+        β = v_src / c  # Velocity normalized to speed of light
+        β̇ = a_src / c  # Acceleration normalized to speed of light
+        one_minus_β_dot_β = 1 - jnp.dot(β, β)
+        one_minus_n_dot_β = 1 - jnp.dot(n, β)
+        one_minus_n_dot_β_cubed = one_minus_n_dot_β**3
+        n_minus_β = n - β
+        coeff = q / (4 * pi * epsilon_0)  # Common coefficient
 
         # Potentials
-        scalar = coeff / (one_minus_n_dot_beta * R)
-        vector = beta * scalar / c
+        scalar = coeff / (one_minus_n_dot_β * R)
+        vector = β * scalar / c
 
         # Fields
-        electric_term1 = coeff * n_minus_beta / (gamma_sq_inv * one_minus_n_dot_beta_cubed * R**2)
+        electric_term1 = coeff * n_minus_β * one_minus_β_dot_β / (one_minus_n_dot_β_cubed * R**2)
         magnetic_term1 = jnp.cross(n, electric_term1) / c
 
-        electric_term2 = (
-            coeff * jnp.cross(n, jnp.cross(n_minus_beta, beta_dot)) / (c * one_minus_n_dot_beta_cubed * R)
-        )
+        electric_term2 = coeff * jnp.cross(n, jnp.cross(n_minus_β, β̇)) / (c * one_minus_n_dot_β_cubed * R)
         magnetic_term2 = jnp.cross(n, electric_term2) / c
 
         return (scalar, vector, electric_term1, electric_term2, magnetic_term1, magnetic_term2)
