@@ -1,6 +1,7 @@
 """This module defines the function for calculating the potentials and fields."""
 
-from typing import Callable, Iterable, NamedTuple
+from dataclasses import dataclass
+from typing import Callable, Iterable
 
 import jax
 import jax.numpy as jnp
@@ -10,18 +11,23 @@ from jax.typing import ArrayLike
 from scipy.constants import c, epsilon_0, pi
 
 from pycharge.charge import Charge
-from pycharge.config import Config
 
 
-class Quantities(NamedTuple):
+@dataclass(frozen=True)
+class Quantities:
     scalar: Array
     vector: Array
     electric: Array
     magnetic: Array
 
+    electric_term1: Array
+    electric_term2: Array
+    magnetic_term1: Array
+    magnetic_term2: Array
+
 
 def quantities(
-    charges: Iterable[Charge], config: Config | None = None
+    charges: Iterable[Charge],
 ) -> Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], Quantities]:
     """
     Returns a function to compute electromagnetic fields and potentials
@@ -29,31 +35,24 @@ def quantities(
 
     Args:
         charges: An iterable containing Charge objects.
-        config: Configuration object with computation settings.
 
     Returns:
         A function that takes (x, y, z, t) arrays and returns a dictionary of quantities.
     """
 
     charges = [charges] if isinstance(charges, Charge) else list(charges)
-    config = Config() if config is None else config
 
     if len(charges) == 0:
         raise ValueError("At least one charge must be provided.")
 
-    if config.field_component not in ("total", "velocity", "acceleration"):
-        raise ValueError(
-            f"Invalid field_component: {config.field_component}. Must be 'total', 'velocity', or 'acceleration'."
-        )
-
-    for charge in charges:
+    for idx, charge in enumerate(charges):
         if not callable(charge.position):
-            raise ValueError("Each charge's position must be a callable function of time.")
+            raise ValueError(f"Charge {idx} position must be a callable function of time.")
 
     position_fns = [lambda t, c=charge: jnp.asarray(c.position(t)) for charge in charges]  # Convert to array
     velocity_fns = [jax.jacobian(pos_fn) for pos_fn in position_fns]
     acceleration_fns = [jax.jacobian(vel_fn) for vel_fn in velocity_fns]
-    source_time_fns = [source_time(charge, config) for charge in charges]
+    source_time_fns = [source_time(charge) for charge in charges]
     qs = jnp.array([charge.q for charge in charges])
 
     def quantities_fn(x: ArrayLike, y: ArrayLike, z: ArrayLike, t: ArrayLike) -> Quantities:
@@ -72,13 +71,19 @@ def quantities(
         r = jnp.stack([x, y, z], axis=-1)  # Stack into (..., 3)
         r_flat, t_flat = r.reshape(-1, 3), t.ravel()  # Flatten for vmap
 
-        φ_flat, A_flat, E_flat, B_flat = jax.vmap(calculate_total_sources)(r_flat, t_flat)
+        φ_flat, A_flat, E1_flat, E2_flat, B1_flat, B2_flat = jax.vmap(calculate_total_sources)(r_flat, t_flat)
+        E_flat = E1_flat + E2_flat
+        B_flat = B1_flat + B2_flat
 
         return Quantities(
             φ_flat.reshape(x.shape),
             A_flat.reshape(*x.shape, 3),
             E_flat.reshape(*x.shape, 3),
             B_flat.reshape(*x.shape, 3),
+            E1_flat.reshape(*x.shape, 3),
+            E2_flat.reshape(*x.shape, 3),
+            B1_flat.reshape(*x.shape, 3),
+            B2_flat.reshape(*x.shape, 3),
         )
 
     def calculate_total_sources(r: Array, t: Array) -> tuple:
@@ -105,41 +110,35 @@ def quantities(
         """
         Computes the fields from a single charge at a single point (r, t).
         """
-
         R = jnp.linalg.norm(r - r_src)  # Distance from source to observation point
         n = (r - r_src) / R  # Unit vector from source to observation
         beta = v_src / c  # Velocity normalized to speed of light
         beta_dot = a_src / c  # Acceleration normalized
         one_minus_n_dot_beta = 1 - jnp.dot(n, beta)  # (1 - n · β)
-        coeff = q / (4 * pi * epsilon_0)  # Common prefactor
-        φ = coeff / (one_minus_n_dot_beta * R)
-
-        scalar = φ
-        vector = beta * φ / c
-
-        # Fields
         gamma_sq_inv = 1 - jnp.dot(beta, beta)  # 1/γ²
         one_minus_n_dot_beta_cubed = one_minus_n_dot_beta**3
         n_minus_beta = n - beta
+        coeff = q / (4 * pi * epsilon_0)  # Common prefactor
 
-        E = 0
-        # Electric field from velocity term
-        if config.field_component in ("total", "velocity"):
-            E += n_minus_beta / (gamma_sq_inv * one_minus_n_dot_beta_cubed * R**2)
-        # Electric field from acceleration term
-        if config.field_component in ("total", "acceleration"):
-            E += jnp.cross(n, jnp.cross(n_minus_beta, beta_dot)) / (c * one_minus_n_dot_beta_cubed * R)
-        E *= coeff
+        # Potentials
+        scalar = coeff / (one_minus_n_dot_beta * R)
+        vector = beta * scalar / c
 
-        electric = E
-        magnetic = jnp.cross(n, E) / c
+        # Fields
+        electric_term1 = coeff * n_minus_beta / (gamma_sq_inv * one_minus_n_dot_beta_cubed * R**2)
+        magnetic_term1 = jnp.cross(n, electric_term1) / c
 
-        return (scalar, vector, electric, magnetic)
+        electric_term2 = (
+            coeff * jnp.cross(n, jnp.cross(n_minus_beta, beta_dot)) / (c * one_minus_n_dot_beta_cubed * R)
+        )
+        magnetic_term2 = jnp.cross(n, electric_term2) / c
+
+        return (scalar, vector, electric_term1, electric_term2, magnetic_term1, magnetic_term2)
 
     return quantities_fn
 
 
-def source_time(charge: Charge, config: Config) -> Callable[[Array, Array], Array]:
+def source_time(charge: Charge) -> Callable[[Array, Array], Array]:
     """
     Returns a function to compute the retarded time for a given field point and observation time.
 
@@ -159,9 +158,9 @@ def source_time(charge: Charge, config: Config) -> Callable[[Array, Array], Arra
         def fn(tr, _):
             return jnp.linalg.norm(r - jnp.asarray(charge.position(tr))) - c * (t - tr)
 
-        solver = optx.Newton(config.newton_rtol, config.newton_atol)
+        solver = optx.Newton(charge.newton_rtol, charge.newton_atol)
         t_init = t - jnp.linalg.norm(r - jnp.asarray(charge.position(t))) / c  # Initial guess
-        result = optx.root_find(fn, solver, t_init, max_steps=config.root_find_max_steps)
+        result = optx.root_find(fn, solver, t_init, max_steps=charge.root_find_max_steps)
         return result.value
 
     return source_time_fn

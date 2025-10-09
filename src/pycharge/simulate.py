@@ -5,12 +5,11 @@ import jax.numpy as jnp
 from jax import Array
 
 from pycharge.charge import Charge
-from pycharge.config import Config
 from pycharge.sources import Source
 from pycharge.utils import interpolate_position
 
 
-def simulate(sources: Sequence[Source], config: Config | None = None, print_every_n_timesteps: int = 100):
+def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
     def simulate_fn(ts: Array):
         initial_state = tuple(create_initial_state(source, ts) for source in sources)
         final_state = jax.lax.fori_loop(0, len(ts) - 1, time_step_body, initial_state)
@@ -59,7 +58,7 @@ def simulate(sources: Sequence[Source], config: Config | None = None, print_ever
         for source_idx, source in enumerate(sources):
             other_charges = tuple(ch for i, src in enumerate(charges) if i != source_idx for ch in src)
             current_s = state[source_idx][time_idx]
-            updated_s = rk4_step(source.ode_func, t0, t1, current_s, dt, other_charges, config)
+            updated_s = rk4_step(source.ode_func, t0, t1, current_s, dt, other_charges)
 
             state = (
                 state[:source_idx]
@@ -72,11 +71,11 @@ def simulate(sources: Sequence[Source], config: Config | None = None, print_ever
     return simulate_fn
 
 
-def rk4_step(term, t0, t1, y0, dt, other_charges, config):
-    k1 = term(t0, y0, other_charges, config)
-    k2 = term(t0 + dt / 2, y0 + dt / 2 * k1, other_charges, config)
-    k3 = term(t0 + dt / 2, y0 + dt / 2 * k2, other_charges, config)
-    k4 = term(t0 + dt, y0 + dt * k3, other_charges, config)
+def rk4_step(term, t0, t1, y0, dt, other_charges):
+    k1 = term(t0, y0, other_charges)
+    k2 = term(t0 + dt / 2, y0 + dt / 2 * k1, other_charges)
+    k3 = term(t0 + dt / 2, y0 + dt / 2 * k2, other_charges)
+    k4 = term(t0 + dt, y0 + dt * k3, other_charges)
     return y0 + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
 
 

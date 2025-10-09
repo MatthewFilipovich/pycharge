@@ -1,6 +1,7 @@
 """This module defines the Source class."""
 
-from typing import Callable, NamedTuple, Sequence
+from dataclasses import dataclass
+from typing import Callable, Sequence
 
 import jax.numpy as jnp
 from scipy.constants import c, epsilon_0
@@ -9,7 +10,8 @@ from pycharge import quantities
 from pycharge.charge import Charge
 
 
-class Source(NamedTuple):
+@dataclass(frozen=True)
+class Source:
     charges_0: Sequence[Charge]
     ode_func: Callable
 
@@ -26,12 +28,12 @@ def dipole_source(d0, q, omega_0, m, origin=(0, 0, 0), polarized=True):
 
     positions_0 = [lambda t: origin + d0 / 2, lambda t: origin - d0 / 2]
 
-    def dipole_ode_fn(time, state, other_charges, config):
+    def dipole_ode_fn(time, state, other_charges):
         r0, v0 = state[0]
         r1, v1 = state[1]
 
         x, y, z = (r0 + r1) / 2
-        E = quantities(other_charges, config)(x, y, z, time).electric if other_charges else 0
+        E = quantities(other_charges)(x, y, z, time).electric if other_charges else 0
 
         if polarized:
             E = E * polarization_direction
