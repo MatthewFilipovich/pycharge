@@ -67,6 +67,7 @@ def quantities(
         x, y, z, t = jnp.asarray(x), jnp.asarray(y), jnp.asarray(z), jnp.asarray(t)
         if not (x.shape == y.shape == z.shape == t.shape):
             raise ValueError("x, y, z, and t must have the same shape.")
+        original_shape = x.shape
 
         r = jnp.stack([x, y, z], axis=-1)  # Stack into (..., 3)
         r_flat, t_flat = r.reshape(-1, 3), t.ravel()  # Flatten for vmap
@@ -76,14 +77,14 @@ def quantities(
         B_flat = B1_flat + B2_flat
 
         return Quantities(
-            φ_flat.reshape(x.shape),
-            A_flat.reshape(*x.shape, 3),
-            E_flat.reshape(*x.shape, 3),
-            B_flat.reshape(*x.shape, 3),
-            E1_flat.reshape(*x.shape, 3),
-            E2_flat.reshape(*x.shape, 3),
-            B1_flat.reshape(*x.shape, 3),
-            B2_flat.reshape(*x.shape, 3),
+            φ_flat.reshape(original_shape),
+            A_flat.reshape(*original_shape, 3),
+            E_flat.reshape(*original_shape, 3),
+            B_flat.reshape(*original_shape, 3),
+            E1_flat.reshape(*original_shape, 3),
+            E2_flat.reshape(*original_shape, 3),
+            B1_flat.reshape(*original_shape, 3),
+            B2_flat.reshape(*original_shape, 3),
         )
 
     def calculate_total_sources(r: Array, t: Array) -> tuple:
@@ -99,8 +100,8 @@ def quantities(
         a_srcs = jnp.stack([acc_fn(tr) for acc_fn, tr in zip(acceleration_fns, t_srcs)])
 
         # Compute individual contributions
-        vmap_calculate_individual_source = jax.vmap(calculate_individual_source, in_axes=(0, 0, 0, 0, None))
-        individual_quantities = vmap_calculate_individual_source(r_srcs, v_srcs, a_srcs, qs, r)
+        calculate_individual_source_vmap = jax.vmap(calculate_individual_source, in_axes=(0, 0, 0, 0, None))
+        individual_quantities = calculate_individual_source_vmap(r_srcs, v_srcs, a_srcs, qs, r)
         # Sum contributions from all charges
         summed_quantities = tuple(jnp.sum(value, axis=0) for value in individual_quantities)
 
