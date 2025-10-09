@@ -1,3 +1,4 @@
+from dataclasses import replace
 from typing import Sequence
 
 import jax
@@ -35,9 +36,7 @@ def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
             position = interpolate_position(
                 ts, position_array, velocity_array, position_0, nan_position_fill_value
             )
-            q = charge0.q
-
-            return Charge(position, q)
+            return replace(charge0, position=position)
 
         if print_every_n_timesteps:
             jax.lax.cond(
@@ -75,7 +74,8 @@ def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
     return simulate_fn
 
 
-def rk4_step(term, t0, t1, y0, dt, other_charges):  # TODO: remove and use diffrax?
+# TODO: remove and use diffrax? Can I combine all the ode_funcs into one and then use variable timestep integrator?
+def rk4_step(term, t0, t1, y0, dt, other_charges):
     k1 = term(t0, y0, other_charges)
     k2 = term(t0 + dt / 2, y0 + dt / 2 * k1, other_charges)
     k3 = term(t0 + dt / 2, y0 + dt / 2 * k2, other_charges)
