@@ -11,12 +11,12 @@ from pycharge.utils import interpolate_position
 
 def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
     def simulate_fn(ts: Array):
-        initial_state = tuple(create_initial_state(source, ts) for source in sources)
+        initial_state = tuple(create_initial_array(source, ts) for source in sources)
         final_state = jax.lax.fori_loop(0, len(ts) - 1, time_step_body, initial_state)
 
         return final_state
 
-    def create_initial_state(source: Source, ts: Array) -> Array:
+    def create_initial_array(source: Source, ts: Array) -> Array:
         state_array = jnp.full([len(ts), len(source.charges_0), 2, 3], jnp.nan)
 
         for charge_idx, charge in enumerate(source.charges_0):
@@ -25,13 +25,6 @@ def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
         return state_array
 
     def time_step_body(time_idx: int, state: tuple[Array, ...]) -> tuple[Array, ...]:
-        if print_every_n_timesteps:
-            jax.lax.cond(
-                time_idx % print_every_n_timesteps == 0,
-                lambda: jax.debug.print("Timestep {x}", x=time_idx),
-                lambda: None,
-            )
-
         def create_charge(source_idx: int, charge_idx: int) -> Charge:
             charge0 = sources[source_idx].charges_0[charge_idx]
             position_0 = charge0.position
@@ -46,17 +39,27 @@ def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
 
             return Charge(position, q)
 
-        charges = tuple(
-            tuple(create_charge(s_idx, c_idx) for c_idx, _ in enumerate(source.charges_0))
-            for s_idx, source in enumerate(sources)
-        )
+        if print_every_n_timesteps:
+            jax.lax.cond(
+                time_idx % print_every_n_timesteps == 0,
+                lambda: jax.debug.print("Timestep {x}", x=time_idx),
+                lambda: None,
+            )
 
         t0 = ts[time_idx]
         t1 = ts[time_idx + 1]
         dt = t1 - t0
 
+        charges = tuple(
+            create_charge(s_idx, c_idx)
+            for s_idx, source in enumerate(sources)
+            for c_idx, _ in enumerate(source.charges_0)
+        )
+        charge_idx_offset = 0  # running index into the flattened `charges` tuple
+
         for source_idx, source in enumerate(sources):
-            other_charges = tuple(ch for i, src in enumerate(charges) if i != source_idx for ch in src)
+            other_charges = charges[:charge_idx_offset] + charges[charge_idx_offset + len(source.charges_0) :]
+
             current_s = state[source_idx][time_idx]
             updated_s = rk4_step(source.ode_func, t0, t1, current_s, dt, other_charges)
 
@@ -65,13 +68,14 @@ def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
                 + (state[source_idx].at[time_idx + 1].set(updated_s),)
                 + state[source_idx + 1 :]
             )
+            charge_idx_offset += len(source.charges_0)
 
         return state
 
     return simulate_fn
 
 
-def rk4_step(term, t0, t1, y0, dt, other_charges):
+def rk4_step(term, t0, t1, y0, dt, other_charges):  # TODO: remove and use diffrax?
     k1 = term(t0, y0, other_charges)
     k2 = term(t0 + dt / 2, y0 + dt / 2 * k1, other_charges)
     k3 = term(t0 + dt / 2, y0 + dt / 2 * k2, other_charges)
