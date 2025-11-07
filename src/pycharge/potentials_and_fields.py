@@ -74,7 +74,7 @@ def potentials_and_fields(
             *(q.reshape(*original_shape, 3) for q in other_quantities_flat),  # 3D vectors quantities
         )
 
-    def calculate_total_sources(r: Array, t: Array) -> tuple:
+    def calculate_total_sources(r: Array, t: Array) -> Quantities:
         """
         Computes the total fields at a single spacetime point (r, t) by summing the contributions from all
         charges.
@@ -95,7 +95,9 @@ def potentials_and_fields(
 
         return summed_quantities
 
-    def calculate_individual_source(r_src: Array, v_src: Array, a_src: Array, q: Array, r: Array) -> tuple:
+    def calculate_individual_source(
+        r_src: Array, v_src: Array, a_src: Array, q: Array, r: Array
+    ) -> Quantities:
         """
         Computes the fields from a single charge at a single point (r, t).
         """

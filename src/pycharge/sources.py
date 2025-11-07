@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Callable, Sequence
 
 import jax.numpy as jnp
+from jaxtyping import ArrayLike
 from scipy.constants import c, epsilon_0
 
 from pycharge import potentials_and_fields
@@ -16,39 +17,39 @@ class Source:
     ode_func: Callable
 
 
-def dipole_source(d0, q, omega_0, m, origin=(0, 0, 0), polarized=True):
-    if isinstance(m, (int, float)):
-        m = (m, m)
-    m_eff = m[0] * m[1] / (m[0] + m[1])
+def dipole_source(
+    d_0: ArrayLike | Sequence[ArrayLike],
+    q: float,
+    omega_0: float,
+    m: float,
+    origin: ArrayLike | Sequence[ArrayLike] = (0, 0, 0),
+):
+    d_0 = jnp.asarray(d_0)
+    origin = jnp.asarray(origin)
+
+    m_eff = m / 2
     gamma_0 = 1 / (4 * jnp.pi * epsilon_0) * 2 * q**2 * omega_0**2 / (3 * m_eff * c**3)
-    origin = jnp.array(origin)
-    d0 = jnp.array(d0)
+    polarization_direction = jnp.abs(d_0 / jnp.linalg.norm(d_0))
 
-    polarization_direction = abs(d0 / jnp.linalg.norm(d0))
+    positions_0 = [lambda t: origin - d_0 / 2, lambda t: origin + d_0 / 2]
 
-    positions_0 = [lambda t: origin + d0 / 2, lambda t: origin - d0 / 2]
-
-    def dipole_ode_fn(time, state, other_charges):
-        r0, v0 = state[0]
-        r1, v1 = state[1]
+    def dipole_ode_fn(t, y, other_charges):
+        r0, v0 = y[0]
+        r1, v1 = y[1]
 
         x, y, z = (r0 + r1) / 2
-        E = potentials_and_fields(other_charges)(x, y, z, time).electric if other_charges else 0
+        E = potentials_and_fields(other_charges)(x, y, z, t).electric if other_charges else 0
+        E = E * polarization_direction
 
-        if polarized:
-            E = E * polarization_direction
-
-        dipole_r = r0 - r1
-        dipole_v = v0 - v1
+        dipole_r = r1 - r0
+        dipole_v = v1 - v0
         dipole_a = q / m_eff * E - gamma_0 * dipole_v - omega_0**2 * dipole_r
 
-        dr0_dt = v0
-        dr1_dt = v1
-        dv0_dt = dipole_a / 2
-        dv1_dt = -dipole_a / 2
+        dr0_dt, dv0_dt = v0, -dipole_a / 2
+        dr1_dt, dv1_dt = v1, dipole_a / 2
 
         out = jnp.asarray([[dr0_dt, dv0_dt], [dr1_dt, dv1_dt]])
 
         return out
 
-    return Source(charges_0=(Charge(positions_0[0], q), Charge(positions_0[1], -q)), ode_func=dipole_ode_fn)
+    return Source(charges_0=(Charge(positions_0[0], -q), Charge(positions_0[1], q)), ode_func=dipole_ode_fn)
