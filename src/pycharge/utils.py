@@ -13,18 +13,17 @@ def interpolate_position(
     position_array: Array,
     velocity_array: Array,
     position_0: Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]],
-    nan_position_fill_value: Array | None = None,
+    t_end: None | Array = None,
 ) -> Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]]:
     t_start = ts[0]
-    t_end = ts[-1]
-    if nan_position_fill_value is None:
-        nan_position_fill_value = jnp.full(3, jnp.nan)
+    t_end = ts[-1] if t_end is None else t_end
+    t_end_idx = jnp.searchsorted(ts, t_end, side="right") - 1
 
     def before_start(t):
         return position_0(t)
 
     def after_end(t):
-        return nan_position_fill_value
+        return position_array[t_end_idx]
 
     def interpolate(t):
         t_idx = jnp.searchsorted(ts, t, side="right") - 1
@@ -45,10 +44,8 @@ def interpolate_position(
         t_norm = (t - ts[t_idx]) / dt
         position = a * t_norm**3 + b * t_norm**2 + c * t_norm + d
 
-        position = jnp.where(jnp.any(jnp.isnan(position)), nan_position_fill_value, position)
-
         return position
 
     return lambda t: jax.lax.cond(
-        t < t_start, before_start, lambda t: jax.lax.cond(t_end < t, after_end, interpolate, t), t
+        t <= t_start, before_start, lambda t: jax.lax.cond(t_end <= t, after_end, interpolate, t), t
     )
