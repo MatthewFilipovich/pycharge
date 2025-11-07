@@ -20,7 +20,6 @@ def simulate(
 
     def create_initial_state(ts: Array, source: Source) -> Array:
         source_state = jnp.full([len(ts), len(source.charges_0), 2, 3], jnp.nan)
-
         for charge_idx, charge in enumerate(source.charges_0):
             pos0, vel0 = charge.position(ts[0]), jax.jacobian(charge.position)(ts[0])
             source_state = source_state.at[0, charge_idx, :, :].set([pos0, vel0])
@@ -31,14 +30,14 @@ def simulate(
         print_timestep(time_idx)
 
         charges = create_charges(time_idx, source_states)
-        t0, t1 = ts[time_idx], ts[time_idx + 1]
-        dt = t1 - t0
+        t = ts[time_idx]
+        dt = ts[time_idx + 1] - ts[time_idx]
 
         def time_step_source(source_idx):
-            y0 = source_states[source_idx][time_idx]
+            u = source_states[source_idx][time_idx]
             other_charges_flat = [c for i, c_tuple in enumerate(charges) if i != source_idx for c in c_tuple]
             ode_func = sources[source_idx].ode_func
-            y_step = rk4_step(ode_func, t0, y0, dt, other_charges_flat)
+            y_step = rk4_step(ode_func, t, u, dt, other_charges_flat)
 
             return source_states[source_idx].at[time_idx + 1].set(y_step)
 
@@ -77,12 +76,12 @@ def simulate(
     return simulate_fn
 
 
-def rk4_step(term, t0, y0, dt, other_charges):
-    k1 = term(t0, y0, other_charges)
-    k2 = term(t0 + dt / 2, y0 + dt / 2 * k1, other_charges)
-    k3 = term(t0 + dt / 2, y0 + dt / 2 * k2, other_charges)
-    k4 = term(t0 + dt, y0 + dt * k3, other_charges)
-    return y0 + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+def rk4_step(term, t, u, dt, other_charges):
+    k1 = term(t, u, other_charges)
+    k2 = term(t + dt / 2, u + dt / 2 * k1, other_charges)
+    k3 = term(t + dt / 2, u + dt / 2 * k2, other_charges)
+    k4 = term(t + dt, u + dt * k3, other_charges)
+    return u + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
 
 
 if __name__ == "__main__":

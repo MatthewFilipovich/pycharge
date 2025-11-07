@@ -7,7 +7,7 @@ from jax.typing import ArrayLike
 from scipy.constants import e
 
 
-@dataclass(frozen=True)
+@dataclass()
 class Charge:
     position: Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]]
     q: float = e
