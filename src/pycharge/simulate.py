@@ -1,5 +1,5 @@
 from dataclasses import replace
-from typing import Sequence
+from typing import Callable, Sequence
 
 import jax
 import jax.numpy as jnp
@@ -10,7 +10,9 @@ from pycharge.sources import Source
 from pycharge.utils import interpolate_position
 
 
-def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
+def simulate(
+    sources: Sequence[Source], print_every_n_timesteps: int = 100
+) -> Callable[[Array], tuple[Array, ...]]:
     def simulate_fn(ts: Array):
         initial_state = tuple(create_initial_array(source, ts) for source in sources)
         final_state = jax.lax.fori_loop(0, len(ts) - 1, time_step_body, initial_state)
@@ -60,7 +62,7 @@ def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
             other_charges = charges[:charge_idx_offset] + charges[charge_idx_offset + len(source.charges_0) :]
 
             current_s = state[source_idx][time_idx]
-            updated_s = rk4_step(source.ode_func, t0, t1, current_s, dt, other_charges)
+            updated_s = rk4_step(source.ode_func, t0, current_s, dt, other_charges)
 
             state = (
                 state[:source_idx]
@@ -74,8 +76,7 @@ def simulate(sources: Sequence[Source], print_every_n_timesteps: int = 100):
     return simulate_fn
 
 
-# TODO: remove and use diffrax? Can I combine all the ode_funcs into one and then use variable timestep integrator?
-def rk4_step(term, t0, t1, y0, dt, other_charges):
+def rk4_step(term, t0, y0, dt, other_charges):
     k1 = term(t0, y0, other_charges)
     k2 = term(t0 + dt / 2, y0 + dt / 2 * k1, other_charges)
     k3 = term(t0 + dt / 2, y0 + dt / 2 * k2, other_charges)
