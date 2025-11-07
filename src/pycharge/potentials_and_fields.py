@@ -66,19 +66,12 @@ def potentials_and_fields(
         r = jnp.stack([x, y, z], axis=-1)  # Stack into (..., 3)
         r_flat, t_flat = r.reshape(-1, 3), t.ravel()  # Flatten for vmap
 
-        φ_flat, A_flat, E1_flat, E2_flat, B1_flat, B2_flat = jax.vmap(calculate_total_sources)(r_flat, t_flat)
-        E_flat = E1_flat + E2_flat
-        B_flat = B1_flat + B2_flat
+        quantities_flat = jax.vmap(calculate_total_sources)(r_flat, t_flat)
+        scalar_flat, other_quantities_flat = quantities_flat[0], quantities_flat[1:]
 
         return Quantities(
-            φ_flat.reshape(original_shape),
-            A_flat.reshape(*original_shape, 3),
-            E_flat.reshape(*original_shape, 3),
-            B_flat.reshape(*original_shape, 3),
-            E1_flat.reshape(*original_shape, 3),
-            E2_flat.reshape(*original_shape, 3),
-            B1_flat.reshape(*original_shape, 3),
-            B2_flat.reshape(*original_shape, 3),
+            scalar_flat.reshape(original_shape),  # 1D scalar quantity
+            *(q.reshape(*original_shape, 3) for q in other_quantities_flat),  # 3D vectors quantities
         )
 
     def calculate_total_sources(r: Array, t: Array) -> tuple:
@@ -98,7 +91,7 @@ def potentials_and_fields(
         calculate_individual_source_vmap = jax.vmap(calculate_individual_source, in_axes=(0, 0, 0, 0, None))
         individual_quantities = calculate_individual_source_vmap(r_srcs, v_srcs, a_srcs, qs, r)
         # Sum contributions from all charges
-        summed_quantities = tuple(jnp.sum(value, axis=0) for value in individual_quantities)
+        summed_quantities = Quantities(*(jnp.sum(value, axis=0) for value in individual_quantities))
 
         return summed_quantities
 
@@ -117,17 +110,19 @@ def potentials_and_fields(
         coeff = q / (4 * pi * epsilon_0)  # Common coefficient
 
         # Potentials
-        scalar = coeff / (one_minus_n_dot_β * R)
-        vector = β * scalar / c
+        φ = coeff / (one_minus_n_dot_β * R)
+        A = β * φ / c
 
         # Fields
-        electric_term1 = coeff * n_minus_β * one_minus_β_dot_β / (one_minus_n_dot_β_cubed * R**2)
-        magnetic_term1 = jnp.cross(n, electric_term1) / c
+        E1 = coeff * n_minus_β * one_minus_β_dot_β / (one_minus_n_dot_β_cubed * R**2)
+        E2 = coeff * jnp.cross(n, jnp.cross(n_minus_β, β̇)) / (c * one_minus_n_dot_β_cubed * R)
+        E = E1 + E2
 
-        electric_term2 = coeff * jnp.cross(n, jnp.cross(n_minus_β, β̇)) / (c * one_minus_n_dot_β_cubed * R)
-        magnetic_term2 = jnp.cross(n, electric_term2) / c
+        B1 = jnp.cross(n, E1) / c
+        B2 = jnp.cross(n, E2) / c
+        B = B1 + B2
 
-        return (scalar, vector, electric_term1, electric_term2, magnetic_term1, magnetic_term2)
+        return Quantities(φ, A, E, B, E1, E2, B1, B2)
 
     return quantities_fn
 
