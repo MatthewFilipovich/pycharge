@@ -82,7 +82,7 @@ html_theme_options = {
 }
 
 html_static_path = ["_static"]
-html_sidebars = {"auto_quickstart/quickstart": []}  # Disable sidebar for specific pages
+html_sidebars = {"_generated/auto_quickstart/quickstart": []}  # Disable sidebar for specific pages
 
 
 # -- Custom configuration ----------------------------------------------------

@@ -8,4 +8,6 @@ User Guide
    :maxdepth: 1
    :caption: Contents
    
-   field
+   point_charges
+   lorentz_oscillators
+   coupled_LOs
