@@ -47,7 +47,9 @@ def potentials_and_fields(
         if not callable(charge.position):
             raise ValueError(f"Charge {idx} position must be a callable function of time.")
 
-    position_fns = [lambda t, c=charge: jnp.asarray(c.position(t)) for charge in charges]  # Convert to array
+    position_fns = [
+        lambda t, c=charge: jnp.asarray(c.position(t), dtype=jnp.result_type(0.0)) for charge in charges
+    ]  # Convert to array with consistent float dtype (in case of integers)
     velocity_fns = [jax.jacobian(pos_fn) for pos_fn in position_fns]
     acceleration_fns = [jax.jacobian(vel_fn) for vel_fn in velocity_fns]
     source_time_fns = [source_time(charge) for charge in charges]
