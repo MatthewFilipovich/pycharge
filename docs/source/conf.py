@@ -55,8 +55,8 @@ html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_title = "PyCharge"
 
-# html_favicon = "_static/favicon.png"
-# html_logo = "_static/favicon.png"
+html_favicon = "_static/favicon.png"
+html_logo = "_static/favicon.png"
 html_js_files = ["custom-icon.js"]
 html_theme_options = {
     "icon_links": [
