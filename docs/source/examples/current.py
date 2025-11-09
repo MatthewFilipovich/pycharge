@@ -9,7 +9,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from scipy.constants import e, mu_0
 
-from pycharge import Charge, magnetic_field
+from pycharge import Charge, potentials_and_fields
 
 # %%
 num_charges = 2
@@ -38,12 +38,12 @@ x = jnp.zeros_like(z)
 y = jnp.zeros_like(z)
 t = jnp.zeros_like(z)
 
-magnetic_field_fn = jax.jit(magnetic_field(charges))
-magnetic_field_grid = magnetic_field_fn(x, y, z, t)
+potentials_and_fields_fn = jax.jit(potentials_and_fields(charges))
+quantities = potentials_and_fields_fn(x, y, z, t)
 # %% Calculate the magnetic field using Biot Savart
 I = num_charges * e * omega / (2 * jnp.pi)
 B_biot_savart = mu_0 * I * R**2 / (2 * (z**2 + R**2) ** (3 / 2))
 
 # %%
-plt.plot(z, magnetic_field_grid[:, 2])
+plt.plot(z, quantities.magnetic[:, 2])
 plt.plot(z, B_biot_savart, "--")

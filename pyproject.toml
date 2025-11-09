@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 77.0.3"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -44,6 +44,9 @@ dev = [
 Homepage = "https://github.com/MatthewFilipovich/pycharge"
 Documentation = "https://pycharge.readthedocs.io/"
 Tracker = "https://github.com/MatthewFilipovich/pycharge/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.setuptools.package-data]
 "pycharge" = ["py.typed"]

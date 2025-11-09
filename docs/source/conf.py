@@ -27,6 +27,7 @@ autoapi_member_order = "alphabetical"
 autoapi_dirs = ["../../src/pycharge"]
 autoapi_type = "python"
 autoapi_add_toctree_entry = False
+autoapi_keep_files = True
 autodoc_typehints = "description"
 autoapi_options = [
     "members",
@@ -42,7 +43,11 @@ intersphinx_mapping = {
 
 sphinx_gallery_conf = {
     "examples_dirs": ["examples", "quickstart", "user_guide"],
-    "gallery_dirs": ["auto_examples", "auto_quickstart", "auto_user_guide"],
+    "gallery_dirs": [
+        "_generated/auto_examples",
+        "_generated/auto_quickstart",
+        "_generated/auto_user_guide",
+    ],
     "reference_url": {"pycharge": None},
     "filename_pattern": "^((?!sphinx_skip).)*$",  # Exclude files with 'sphinx_skip' in the name
     "matplotlib_animations": (True, "jshtml"),

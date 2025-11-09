@@ -183,5 +183,6 @@ venv*/
 data/
 
 # sphinx-gallery
-auto_*/
+docs/source/_generated/
+docs/source/autoapi/
 sg_execution_times.rst
