@@ -11,7 +11,7 @@ from pycharge import potentials_and_fields
 from pycharge.charge import Charge
 
 
-@dataclass(frozen=True)
+@dataclass()
 class Source:
     charges_0: Sequence[Charge]
     ode_func: Callable
@@ -33,9 +33,9 @@ def dipole_source(
 
     positions_0 = [lambda t: origin - d_0 / 2, lambda t: origin + d_0 / 2]
 
-    def dipole_ode_fn(t, y, other_charges):
-        r0, v0 = y[0]
-        r1, v1 = y[1]
+    def dipole_ode_fn(t, u, other_charges):
+        r0, v0 = u[0]
+        r1, v1 = u[1]
 
         x, y, z = (r0 + r1) / 2
         E = potentials_and_fields(other_charges)(x, y, z, t).electric if other_charges else 0
@@ -48,8 +48,25 @@ def dipole_source(
         dr0_dt, dv0_dt = v0, -dipole_a / 2
         dr1_dt, dv1_dt = v1, dipole_a / 2
 
-        out = jnp.asarray([[dr0_dt, dv0_dt], [dr1_dt, dv1_dt]])
-
-        return out
+        return jnp.array([[dr0_dt, dv0_dt], [dr1_dt, dv1_dt]])
 
     return Source(charges_0=(Charge(positions_0[0], -q), Charge(positions_0[1], q)), ode_func=dipole_ode_fn)
+
+
+def free_particle_source(
+    position_0: Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]], q: float, m: float
+):
+    def free_particle_ode_fn(t, u, other_charges):
+        r, v = u[0]
+        x, y, z = r
+
+        quantities = potentials_and_fields(other_charges)(x, y, z, t) if other_charges else None
+        E = quantities.electric if quantities else jnp.zeros(3)
+        B = quantities.magnetic if quantities else jnp.zeros(3)
+
+        dr_dt = v
+        dv_dt = q / m * (E + jnp.cross(v, B))
+
+        return jnp.array([dr_dt, dv_dt])
+
+    return Source(charges_0=(Charge(position_0, q),), ode_func=free_particle_ode_fn)
