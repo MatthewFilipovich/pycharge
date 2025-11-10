@@ -40,6 +40,16 @@ dev = [
   "scipy"
 ]
 
+docs = [
+  "sphinx-autoapi",
+  "sphinx-autobuild",
+  "pydata-sphinx-theme",
+  "sphinx-copybutton",
+  "sphinx-gallery",
+  "sphinx-design",
+  "matplotlib"
+]
+
 [project.urls]
 Homepage = "https://github.com/MatthewFilipovich/pycharge"
 Documentation = "https://pycharge.readthedocs.io/"
