@@ -1,15 +1,19 @@
 """
-Current coil
-=================
+Visualizing Coil Fields in 2D
+=============================
+
+This example demonstrates how to visualize the full electromagnetic response
+(potentials and fields) from a current coil in a 2D plane.
+
+We model a coil using a ring of discrete charges and then calculate the
+scalar potential, vector potential, electric field, and magnetic field on a
+2D grid that lies in the same plane as the coil. The results are plotted
+as 2D images.
 """
 
-
-# %% Import necessary libraries
-
-# sphinx_gallery_start_ignore
-# sphinx_gallery_multi_image = "single"
-# sphinx_gallery_end_ignore
-
+# %%
+# 1. Import necessary libraries
+# -----------------------------
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -18,16 +22,20 @@ from scipy.constants import e
 
 from pycharge import Charge, potentials_and_fields
 
-# jax.config.update("jax_enable_x64", True)
+# %%
+# 2. Create the charges for the current coil
+# ------------------------------------------
+# We define a circular trajectory and create a list of `Charge` objects
+# distributed evenly around the circle to model the coil.
 
-
-# %% Define the position functions of the two charges
 num_charges = 20
 R = 1e-2
 omega = 1e8
 
 
 def get_circular_position(phi):
+    """Returns a function for a circular trajectory with a given phase."""
+
     def position(t):
         x = R * jnp.cos(omega * t + phi)
         y = R * jnp.sin(omega * t + phi)
@@ -42,47 +50,67 @@ charges = [
     for phi in jnp.linspace(0, 2 * jnp.pi, num_charges, endpoint=False)
 ]
 
-# %% Define the observation grid in the x-y plane at z=0 and t=0
-x = jnp.linspace(-1.5 * R, 1.5 * R, int(1e3))
-y = jnp.linspace(-1.5 * R, 1.5 * R, int(1e3))
+# %%
+# 3. Define the observation grid and calculate quantities
+# -------------------------------------------------------
+# We define a 2D grid in the x-y plane at z=0 and t=0.
+
+grid_res = 200
+x = jnp.linspace(-1.5 * R, 1.5 * R, grid_res)
+y = jnp.linspace(-1.5 * R, 1.5 * R, grid_res)
 z = jnp.array([0.0])
 t = jnp.array([0.0])
 
 X, Y, Z, T = jnp.meshgrid(x, y, z, t, indexing="ij")
 
+# Get the JIT-compiled function and calculate the quantities
 fn = jax.jit(potentials_and_fields(charges))
 output = fn(X, Y, Z, T)
 
-# %% Plot the potential along the observation grid
-for key in ["scalar", "electric", "vector", "magnetic"]:
-    if key == "scalar":
-        fig, ax = plt.subplots()
-        out = getattr(output, key).squeeze()
-        if out.max() == 0:
-            norm = None
-        else:
-            vmax = jnp.max(out).item()
-            norm = colors.SymLogNorm(linthresh=vmax * 1e-5, linscale=1, vmin=-vmax, vmax=vmax)
+# %%
+# 4. Plot the results
+# -------------------
+# We loop through each calculated quantity and plot its components on the grid.
+# A symmetric logarithmic scale is used for the color map to handle the large
+# dynamic range of the field values, especially near the charges.
 
-        im = ax.imshow(out, origin="lower", cmap="RdBu_r", norm=norm)
-        plt.colorbar(im, ax=ax)
+field_names = ["scalar", "vector", "electric", "magnetic"]
+component_names = ["x", "y", "z"]
+
+for key in field_names:
+    # Squeeze to remove the singleton z and t dimensions
+    field_data = getattr(output, key).squeeze()
+
+    if key == "scalar":
+        fig, ax = plt.subplots(figsize=(8, 7))
+        vmax = jnp.max(jnp.abs(field_data)).item()
+        norm = colors.SymLogNorm(linthresh=vmax * 1e-5, linscale=1, vmin=-vmax, vmax=vmax)
+
+        im = ax.imshow(
+            field_data.T, origin="lower", cmap="RdBu_r", norm=norm, extent=[x[0], x[-1], y[0], y[-1]]
+        )
+        fig.colorbar(im, ax=ax, label=f"{key.capitalize()} Potential (V)")
+        ax.set_title(f"{key.capitalize()} Potential")
+        ax.set_xlabel("x (m)")
+        ax.set_ylabel("y (m)")
 
     else:
-        fig, ax = plt.subplots(1, 3, figsize=(15, 5))
+        fig, axes = plt.subplots(1, 3, figsize=(18, 5))
         for i in range(3):
-            out = getattr(output, key).squeeze()[..., i]
-
-            if out.max() == 0:
+            component_data = field_data[..., i]
+            vmax = jnp.max(jnp.abs(component_data)).item()
+            if vmax == 0:
                 norm = None
             else:
-                vmax = jnp.max(out).item()
                 norm = colors.SymLogNorm(linthresh=vmax * 1e-5, linscale=1, vmin=-vmax, vmax=vmax)
 
-            im = ax[i].imshow(out, origin="lower", cmap="RdBu_r", norm=norm)
-            plt.colorbar(im, ax=ax[i])
+            im = axes[i].imshow(
+                component_data.T, origin="lower", cmap="RdBu_r", norm=norm, extent=[x[0], x[-1], y[0], y[-1]]
+            )
+            fig.colorbar(im, ax=axes[i], label="Field Strength")
+            axes[i].set_title(f"{key.capitalize()} Field ({component_names[i]}-component)")
+            axes[i].set_xlabel("x (m)")
+            axes[i].set_ylabel("y (m)")
 
-    plt.suptitle(key)
     plt.tight_layout()
     plt.show()
-
-# %%

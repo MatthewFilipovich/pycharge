@@ -58,6 +58,30 @@ and :math:`\gamma_0` is the *free-space energy decay rate* given by
 This equation of motion corresponds to a Lorentzian atom model with transition frequency :math:`\omega_0` and linewidth :math:`\gamma_0` (where :math:`\gamma_0 \ll \omega_0`),  
 valid for non-relativistic velocities since relativistic mass effects are neglected.
 
+PyCharge Implementation
+-----------------------
+
+The driven Lorentz Oscillator equation of motion (Eq. :eq:`eq:LO_equation`) is the core of dynamic dipole simulations in PyCharge. This ODE is solved numerically by the :func:`~pycharge.simulate.simulate` function.
+
+You can create a Lorentz Oscillator source using the :func:`~pycharge.sources.dipole_source` factory function. This function automatically constructs the necessary ODE function that ``simulate`` will use to time-step the dipole's state.
+
+.. code-block:: python
+
+   from scipy.constants import e, m_e
+   from pycharge import dipole_source
+
+   # Create a dipole source with a natural frequency of 200*pi THz
+   lorentz_oscillator = dipole_source(
+       d_0=[0.0, 0.0, 1e-11],  # Initial displacement
+       q=e,
+       omega_0=100e12 * 2 * 3.14159,
+       m=m_e,
+   )
+
+   # This 'lorentz_oscillator' object can now be passed to 'simulate'.
+   # The simulator will calculate the driving field E_d at each step
+   # and solve the ODE to find the new dipole moment.
+
 The **effective mass** :math:`m` (also called *reduced mass*) of the dipole is
 
 .. math::
@@ -146,7 +170,11 @@ The total energy :math:`\mathcal{E}` of a dipole, which is the sum of its kineti
 
    \mathcal{E}(t) = \frac{m \omega_0^2}{2q^2} d^2(t) + \frac{m}{2q^2} \dot d^2(t)
 
-where :math:`\dot d = |\mathbf{\dot d}|`.  
+where :math:`\dot d = |\mathbf{\dot d}|`.
+
+.. note::
+   In a simulation, the dipole moment :math:`\mathbf{d}(t)` and its derivative :math:`\mathbf{\dot d}(t)` are calculated from the state array returned by the :func:`~pycharge.simulate.simulate` function. The state array contains the position and velocity of each charge in the dipole at each time step.
+
 Since the total dipole energy :math:`\mathcal{E}` is proportional to the excited-state population, the normalized population can be determined from
 
 .. math::

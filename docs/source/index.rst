@@ -35,10 +35,10 @@ Key Features
 
       GPU/TPU acceleration, batch processing, and automatic differentiation.
 
-   .. grid-item-card:: 🛠️ **End-to-End Optimization**
+   .. grid-item-card::  🛠️ **Fully Differentiable**
       :class-card: sd-bg-light sd-border sd-shadow
 
-      Joint optimization of optical hardware and machine learning models.
+      Built on JAX, the entire simulation is end-to-end differentiable. Perform gradient-based optimization of physical parameters, or integrate with machine learning models.
 
    .. grid-item-card:: ⚛️ **Simulations**
       :class-card: sd-bg-light sd-border sd-shadow

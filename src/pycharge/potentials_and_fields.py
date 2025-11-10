@@ -13,6 +13,29 @@ from pycharge.charge import Charge
 
 
 class Quantities(NamedTuple):
+    """A container for all computed electromagnetic quantities.
+
+    Attributes
+    ----------
+    scalar : Array
+        The scalar potential (Φ).
+    vector : Array
+        The vector potential (A).
+    electric : Array
+        The total electric field (E).
+    magnetic : Array
+        The total magnetic field (B).
+    electric_term1 : Array
+        The velocity-dependent term of the electric field ("Coulomb field").
+    electric_term2 : Array
+        The acceleration-dependent term of the electric field ("Radiation field").
+    magnetic_term1 : Array
+        The velocity-dependent term of the magnetic field.
+    magnetic_term2 : Array
+        The acceleration-dependent term of the magnetic field.
+
+    """
+
     scalar: Array
     vector: Array
     electric: Array
@@ -132,15 +155,22 @@ def potentials_and_fields(
 
 
 def source_time(charge: Charge) -> Callable[[Array, Array], Array]:
-    """
-    Returns a function to compute the retarded time for a given field point and observation time.
+    """Factory function to create a retarded time solver for a given charge.
+
+    This function returns a new function that, when called with an observation
+    position `r` and observation time `t`, solves the retarded time equation:
+    :math:`c(t - t_r) = |r - r_s(t_r)|`.
+
+    The solver is implemented using ``optimistix.root_find`` with a Newton solver.
+    The solver parameters (tolerances, max steps) are taken from the provided
+    ``charge`` object.
 
     Args:
-        charge: Charge object containing the trajectory.
-        root_finder_config: Configuration for the root finder.
+        charge: The ``Charge`` object for which to solve the retarded time.
 
     Returns:
-        Function that takes (r, t) and returns the retarded time tr.
+        A function that takes an observation position ``r`` (Array) and time ``t`` (Array)
+        and returns the calculated retarded time ``tr`` (Array).
     """
 
     def source_time_fn(r: Array, t: Array) -> Array:
