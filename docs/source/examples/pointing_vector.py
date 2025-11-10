@@ -39,7 +39,6 @@ def position2(t):
     y = 0.0
     z = 0.0
     return x, y, z
-hj
 
 
 quantities_fn = potentials_and_fields([Charge(position1, e), Charge(position2, -e)])
