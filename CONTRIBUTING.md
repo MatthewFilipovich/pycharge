@@ -20,7 +20,7 @@ To prepare your environment for development and testing:
    ```
 3. **Install PyCharge in development mode**:
    ```bash
-   pip install -e '.[dev]'
+   uv sync --all-extras
    ```
 4. **Install pre-commit hooks**:
    ```bash
