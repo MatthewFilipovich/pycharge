@@ -1,8 +1,7 @@
 User Guide
 ===========
 
-.. important::
-    **The User Guide is under development.** For detailed information about the library, please refer to the `arXiv paper <https://arxiv.org/abs/2411.18591>`_.
+This section provides detailed explanations and examples on how to use the various features of PyCharge, including defining sources, calculating potentials and fields, and visualizing results.
 
 .. toctree::
    :maxdepth: 1

@@ -1,6 +1,23 @@
 """
 Poynting Vector
 ===============
+
+Calculate the Poynting Vector
+=============================
+
+The Poynting vector, which is the directional flux of the electromagnetic fields, is defined by
+
+.. math::
+
+    \mathbf{S} = \frac{1}{\mu_0} \mathbf{E} \times \mathbf{B},
+
+and can be calculated in PyCharge along a grid by simply calculating :math:`\mathbf{E}` and :math:`\mathbf{B}` and then performing the cross product. An example is shown in Figure 5 in the PyCharge paper, and the corresponding script is given in `examples/paper_figures/figure5.py <https://github.com/MatthewFilipovich/pycharge/blob/master/examples/paper_figures/figure5.py>`_:
+
+.. figure:: ../../figs/figure5.png
+   :align: center
+   :width: 400px
+
+
 """
 # %%
 # Import PyCharge and other necessary libraries
