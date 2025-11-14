@@ -60,7 +60,7 @@ If you want to update the documentation, you can preview it locally before submi
 **Serve the documentation locally**:
 
    ```bash
-   sphinx-autobuild docs/source docs/build/html --ignore docs/source/sg_execution_times.rst --ignore docs/source/_generated
+   sphinx-autobuild docs/source docs/build/html
    ```
 
 The site will be available at [http://localhost:8000/](http://localhost:8000/).
