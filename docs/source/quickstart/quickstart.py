@@ -65,16 +65,15 @@ jax.config.update("jax_enable_x64", True)
 # acceleration from this position function. You only need to define the path!
 #
 # Here, we define a charge moving in a circle in the x-y plane.
+circular_radius = 1e-10  # Circular radius of 0.1 nm
+velocity = 0.9 * c  # Constant velocity of 90% the speed of light
+omega = velocity / circular_radius  # Angular frequency
 
 
 def circular_position(t):
     """A function describing a circular trajectory."""
-    radius = 1e-10  # Circular radius of 0.1 nm
-    velocity = 0.9 * c  # Constant velocity of 80% the speed of light
-    omega = velocity / radius  # Angular frequency
-
-    x = radius * jnp.cos(omega * t)
-    y = 0.0
+    x = circular_radius * jnp.cos(omega * t)
+    y = circular_radius * jnp.sin(omega * t)
     z = 0.0
     return x, y, z
 
@@ -104,7 +103,7 @@ jit_quantities_fn = jax.jit(quantities_fn)
 
 # Create a 2D grid (1000x1000 points)
 grid_size = 1000
-xy_max = 1e-8
+xy_max = 5e-9
 x_grid = jnp.linspace(-xy_max, xy_max, grid_size)
 y_grid = jnp.linspace(-xy_max, xy_max, grid_size)
 z_grid = jnp.array([0.0])  # Observe in the z=0 plane
@@ -129,18 +128,17 @@ scalar_potential = quantities.scalar
 electric_field = quantities.electric
 electric_field_magnitude = jnp.linalg.norm(electric_field, axis=-1)
 
-print(scalar_potential.dtype)
-
 # Create a figure with two subplots
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
 
 # Plot Scalar Potential
 im1 = ax1.imshow(
-    scalar_potential.squeeze().T,
+    jnp.log10(scalar_potential.squeeze().T),
     extent=(x_grid.min(), x_grid.max(), y_grid.min(), y_grid.max()),
     origin="lower",
     cmap="viridis",
-    vmax=10,
+    vmax=1,
+    vmin=-1,
 )
 fig.colorbar(im1, ax=ax1, label="Scalar Potential (V)")
 ax1.set_xlabel("X Position (m)")
@@ -149,11 +147,12 @@ ax1.set_title("Scalar Potential of a Circularly Moving Charge")
 
 # Plot Electric Field Magnitude
 im2 = ax2.imshow(
-    electric_field_magnitude.squeeze().T,
+    (electric_field_magnitude.squeeze().T),
     extent=(x_grid.min(), x_grid.max(), y_grid.min(), y_grid.max()),
     origin="lower",
     cmap="inferno",
-    vmax=1e12,
+    vmax=1e10,
+    vmin=0,
 )
 fig.colorbar(im2, ax=ax2, label="Electric Field Magnitude (V/m)")
 ax2.set_xlabel("X Position (m)")
@@ -264,5 +263,4 @@ plt.show()
 # # To dive deeper, explore the :doc:`/user_guide/index` for more detailed
 # # explanations of the physics and the :doc:`/examples/index` for more
 # # advanced use cases!
-
 # %%

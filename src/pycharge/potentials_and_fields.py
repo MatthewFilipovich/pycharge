@@ -178,12 +178,26 @@ def source_time(charge: Charge) -> Callable[[Array, Array], Array]:
         Solve for tr such that |r - r_src(tr)| = c * (t - tr).
         """
 
-        def fn(tr, _):
+        def fn_fixed_point(tr, _):
+            return t - jnp.linalg.norm(r - jnp.asarray(charge.position(tr))) / c
+
+        def fn_root_find(tr, _):
             return jnp.linalg.norm(r - jnp.asarray(charge.position(tr))) - c * (t - tr)
 
-        solver = optx.Newton(charge.newton_rtol, charge.newton_atol)
         t_init = t - jnp.linalg.norm(r - jnp.asarray(charge.position(t))) / c  # Initial guess
-        result = optx.root_find(fn, solver, t_init, max_steps=charge.root_find_max_steps)
+
+        # First use a fixed-point iteration to get close to solution
+        solver_fixed_point = optx.FixedPointIteration(rtol=charge.rtol, atol=charge.atol)
+        result_fixed_point = optx.fixed_point(
+            fn_fixed_point, solver_fixed_point, t_init, max_steps=charge.max_steps_fixed_point, throw=False
+        )
+        t_fixed_point = result_fixed_point.value
+
+        # Use Newton's method to refine the solution
+        solver_newton = optx.Newton(charge.rtol, charge.atol)
+        result = optx.root_find(
+            fn_root_find, solver_newton, t_fixed_point, max_steps=charge.max_steps_root_find
+        )
         return result.value
 
     return source_time_fn

@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
     from pycharge.sources import dipole_source
 
-    # jax.config.update("jax_enable_x64", True)
+    jax.config.update("jax_enable_x64", True)
 
     dipole0 = dipole_source(d_0=[0.0, 0.0, 1e-9], q=e, omega_0=100e12 * 2 * jnp.pi, m=m_e)
     dipole1 = dipole_source(
