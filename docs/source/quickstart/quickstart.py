@@ -163,104 +163,104 @@ plt.tight_layout()
 plt.show()
 
 
-# # %%
-# #
-# # ---
-# #
-# # Part 2: Self-Consistent N-Body Electrodynamics
-# # ----------------------------------------------
-# #
-# # PyCharge can also simulate the dynamics of sources whose motion is governed
-# # by the electromagnetic fields they and other sources generate. This is done
-# # using the ``simulate`` function, which takes a sequence of ``Source`` objects
-# # and solves the underlying ordinary differential equations (ODEs).
-# #
-# # Here, we simulate a dipole modeled as a **Lorentz oscillator**, a classical
-# # analog for a two-level quantum system.
+# %%
+#
+# ---
+#
+# Part 2: Self-Consistent N-Body Electrodynamics
+# ----------------------------------------------
+#
+# PyCharge can also simulate the dynamics of sources whose motion is governed
+# by the electromagnetic fields they and other sources generate. This is done
+# using the ``simulate`` function, which takes a sequence of ``Source`` objects
+# and solves the underlying ordinary differential equations (ODEs).
+#
+# Here, we simulate a dipole modeled as a **Lorentz oscillator**, a classical
+# analog for a two-level quantum system.
 
-# from scipy.constants import m_e
+from scipy.constants import m_e
 
-# from pycharge import dipole_source, simulate
+from pycharge import dipole_source, simulate
 
-# # %%
-# # 1. Create a Dipole Source
-# # -------------------------
-# # We use the ``dipole_source`` factory to create a dipole. This object bundles
-# # the initial state of the charges with the ODE that governs its motion. We
-# # define its initial charge separation, natural frequency, and other physical
-# # properties.
+# %%
+# 1. Create a Dipole Source
+# -------------------------
+# We use the ``dipole_source`` factory to create a dipole. This object bundles
+# the initial state of the charges with the ODE that governs its motion. We
+# define its initial charge separation, natural frequency, and other physical
+# properties.
 
-# # A dipole with an initial 1nm separation along the z-axis.
-# dipole = dipole_source(
-#     d_0=[0.0, 0.0, 1e-9],
-#     q=e,
-#     omega_0=100e12 * 2 * jnp.pi,
-#     m=m_e,
-# )
+# A dipole with an initial 1nm separation along the z-axis.
+dipole = dipole_source(
+    d_0=[0.0, 0.0, 1e-9],
+    q=e,
+    omega_0=100e12 * 2 * jnp.pi,
+    m=m_e,
+)
 
-# # %%
-# # 2. Set Up and Run the Simulation
-# # --------------------------------
-# # We define the time steps for the simulation and then create the simulation
-# # function by passing a list of our sources to ``simulate``.
+# %%
+# 2. Set Up and Run the Simulation
+# --------------------------------
+# We define the time steps for the simulation and then create the simulation
+# function by passing a list of our sources to ``simulate``.
 
-# # Simulation time from 0 to 4e-14 seconds with 40,000 steps.
-# t_start = 0.0
-# t_num = 40_000
-# dt = 1e-18
-# ts = jnp.linspace(t_start, (t_num - 1) * dt, t_num)
+# Simulation time from 0 to 4e-14 seconds with 40,000 steps.
+t_start = 0.0
+t_num = 40_000
+dt = 1e-18
+ts = jnp.linspace(t_start, (t_num - 1) * dt, t_num)
 
-# # Create the simulation function and JIT-compile it
-# sim_fn = jax.jit(simulate([dipole]))
+# Create the simulation function and JIT-compile it
+sim_fn = jax.jit(simulate([dipole], ts))
 
-# # Run the simulation. The output is a tuple of states, one for each source.
-# # Each state contains the full position and velocity history of its charges.
-# source_states = sim_fn(ts)
+# Run the simulation. The output is a tuple of states, one for each source.
+# Each state contains the full position and velocity history of its charges.
+source_states = sim_fn()
 
 
-# # %%
-# # 3. Analyze the Simulation Results
-# # ---------------------------------
-# # The ``source_states`` contain the position and velocity of each charge in the
-# # source at every time step. Let's plot the z-position of the two charges
-# # in our dipole.
-# #
-# # The plot shows a damped oscillation. The dipole loses energy over time because,
-# # as an accelerating source, it radiates electromagnetic waves. This effect,
-# # known as **radiation damping**, is automatically captured by the simulation.
+# %%
+# 3. Analyze the Simulation Results
+# ---------------------------------
+# The ``source_states`` contain the position and velocity of each charge in the
+# source at every time step. Let's plot the z-position of the two charges
+# in our dipole.
+#
+# The plot shows a damped oscillation. The dipole loses energy over time because,
+# as an accelerating source, it radiates electromagnetic waves. This effect,
+# known as **radiation damping**, is automatically captured by the simulation.
 
-# # The state for our first (and only) source
-# dipole_state = source_states[0]
+# The state for our first (and only) source
+dipole_state = source_states[0]
 
-# # Extract the position history array: shape is (num_timesteps, num_charges, 2, 3)
-# # The third dimension is for position (0) and velocity (1).
-# position_history = dipole_state[:, :, 0, :]
+# Extract the position history array: shape is (num_timesteps, num_charges, 2, 3)
+# The third dimension is for position (0) and velocity (1).
+position_history = dipole_state[:, :, 0, :]
 
-# # Position history of the first charge in the dipole (negative)
-# charge1_pos = position_history[:, 0, :]
-# # Position history of the second charge in the dipole (positive)
-# charge2_pos = position_history[:, 1, :]
+# Position history of the first charge in the dipole (negative)
+charge1_pos = position_history[:, 0, :]
+# Position history of the second charge in the dipole (positive)
+charge2_pos = position_history[:, 1, :]
 
-# plt.figure(figsize=(10, 6))
-# plt.plot(ts, charge1_pos[:, 2], label="Charge 1 (negative)")
-# plt.plot(ts, charge2_pos[:, 2], label="Charge 2 (positive)")
-# plt.xlabel("Time (s)")
-# plt.ylabel("Z Position (m)")
-# plt.title("Damped Oscillation of Charges in a Simulated Lorentz Dipole")
-# plt.legend()
-# plt.grid(True)
-# plt.show()
+plt.figure(figsize=(10, 6))
+plt.plot(ts, charge1_pos[:, 2], label="Charge 1 (negative)")
+plt.plot(ts, charge2_pos[:, 2], label="Charge 2 (positive)")
+plt.xlabel("Time (s)")
+plt.ylabel("Z Position (m)")
+plt.title("Damped Oscillation of Charges in a Simulated Lorentz Dipole")
+plt.legend()
+plt.grid(True)
+plt.show()
 
-# # %%
-# # Next Steps
-# # ==========
-# #
-# # This quickstart has demonstrated the two main workflows in PyCharge:
-# #
-# # 1.  Calculating fields from charges with predefined trajectories.
-# # 2.  Simulating the dynamics of sources interacting with their own fields.
-# #
-# # To dive deeper, explore the :doc:`/user_guide/index` for more detailed
-# # explanations of the physics and the :doc:`/examples/index` for more
-# # advanced use cases!
+# %%
+# Next Steps
+# ==========
+#
+# This quickstart has demonstrated the two main workflows in PyCharge:
+#
+# 1.  Calculating fields from charges with predefined trajectories.
+# 2.  Simulating the dynamics of sources interacting with their own fields.
+#
+# To dive deeper, explore the :doc:`/user_guide/index` for more detailed
+# explanations of the physics and the :doc:`/examples/index` for more
+# advanced use cases!
 # %%

@@ -10,8 +10,8 @@ from pycharge.utils import interpolate_position
 
 
 def simulate(
-    sources: Sequence[Source], print_every_n_timesteps: int = 100
-) -> Callable[[Array], tuple[Array, ...]]:
+    sources: Sequence[Source], ts: Array, print_every_n_timesteps: int = 100
+) -> Callable[[], tuple[Array, ...]]:
     """Factory function that creates a JAX-jittable simulation function.
 
     This function sets up a simulation for a system of sources (e.g., dipoles,
@@ -25,25 +25,26 @@ def simulate(
 
     Args:
         sources: A sequence of ``Source`` objects to be simulated.
+        ts: A JAX array of time steps at which to evaluate the simulation.
         print_every_n_timesteps: If positive, prints the current timestep every
             `n` steps during the simulation. Useful for debugging long runs.
             Defaults to 100.
 
     Returns:
-        A function that executes the simulation. This function takes a single
-        argument ``ts`` (a JAX array of time steps) and returns a tuple of
+        A function that executes the simulation. This function takes no arguments and returns a tuple of
         state arrays, one for each source. Each state array has the shape
         ``(num_timesteps, num_charges_in_source, 2, 3)``, where the last two
         dimensions correspond to the position and velocity vectors of each charge.
     """
+    dts = ts[1:] - ts[:-1]
 
-    def simulate_fn(ts: Array):
-        source_states = tuple(create_initial_state(ts, source) for source in sources)
-        source_states = jax.lax.fori_loop(0, len(ts) - 1, time_step_body, source_states)
+    def simulate_fn():
+        initial_source_states = tuple(create_initial_state(source) for source in sources)
+        final_source_states = jax.lax.fori_loop(0, len(ts) - 1, time_step_body, initial_source_states)
 
-        return source_states
+        return final_source_states
 
-    def create_initial_state(ts: Array, source: Source) -> Array:
+    def create_initial_state(source: Source) -> Array:
         source_state = jnp.full([len(ts), len(source.charges_0), 2, 3], jnp.nan)
         for charge_idx, charge in enumerate(source.charges_0):
             pos0, vel0 = charge.position(ts[0]), jax.jacobian(charge.position)(ts[0])
@@ -53,18 +54,17 @@ def simulate(
 
     def time_step_body(time_idx: int, source_states: tuple[Array, ...]) -> tuple[Array, ...]:
         print_timestep(time_idx)
-
         charges = create_charges(time_idx, source_states)
-        t = ts[time_idx]
-        dt = ts[time_idx + 1] - ts[time_idx]
 
         def time_step_source(source_idx):
-            u = source_states[source_idx][time_idx]
-            other_charges_flat = [c for i, c_tuple in enumerate(charges) if i != source_idx for c in c_tuple]
             ode_func = sources[source_idx].ode_func
-            y_step = rk4_step(ode_func, t, u, dt, other_charges_flat)
+            t = ts[time_idx]
+            u = source_states[source_idx][time_idx]
+            dt = dts[time_idx]
+            other_charges_flat = [c for i, c_tuple in enumerate(charges) if i != source_idx for c in c_tuple]
+            u_step = rk4_step(ode_func, t, u, dt, other_charges_flat)
 
-            return source_states[source_idx].at[time_idx + 1].set(y_step)
+            return source_states[source_idx].at[time_idx + 1].set(u_step)
 
         source_states = tuple(time_step_source(source_idx) for source_idx in range(len(sources)))
 
@@ -146,15 +146,15 @@ if __name__ == "__main__":
     t_stop = (t_num - 1) * dt
     ts = jnp.linspace(t_start, t_stop, t_num)
 
-    sim_fn = simulate([dipole0, dipole1])
+    sim_fn = simulate([dipole0, dipole1], ts)
     sim_fn = jax.jit(sim_fn)
     # sim_fn = equinox.filter_jit(sim_fn)
 
     start_time = time()
-    state_list = sim_fn(ts)
+    state_list = sim_fn()
     print("Time:", time() - start_time)
     start_time = time()
-    state_list = sim_fn(ts)
+    state_list = sim_fn()
     print("Time:", time() - start_time)
 
     plt.plot(state_list[0][:, 0, 0, 2])
