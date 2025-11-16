@@ -188,25 +188,25 @@ def source_time(charge: Charge) -> Callable[[Array, Array], Array]:
 
         # First use a fixed-point iteration to get close to solution
         solver_fixed_point = optx.FixedPointIteration(
-            rtol=charge.rtol_fixed_point, atol=charge.atol_fixed_point
+            rtol=charge.fixed_point_rtol, atol=charge.fixed_point_atol
         )
         result_fixed_point = optx.fixed_point(
             fn_fixed_point,
             solver_fixed_point,
             t_init,
-            max_steps=charge.max_steps_fixed_point,
-            throw=charge.throw_fixed_point,
+            max_steps=charge.fixed_point_max_steps,
+            throw=charge.fixed_point_throw,
         )
         t_fixed_point = result_fixed_point.value
 
         # Use Newton's method to refine the solution
-        solver_newton = optx.Newton(rtol=charge.rtol_root_find, atol=charge.atol_root_find)
+        solver_newton = optx.Newton(rtol=charge.root_find_rtol, atol=charge.root_find_atol)
         result = optx.root_find(
             fn_root_find,
             solver_newton,
             t_fixed_point,
-            max_steps=charge.max_steps_root_find,
-            throw=charge.throw_root_find,
+            max_steps=charge.root_find_max_steps,
+            throw=charge.root_find_throw,
         )
         return result.value
 
