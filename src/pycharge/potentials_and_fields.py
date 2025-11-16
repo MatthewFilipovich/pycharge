@@ -182,21 +182,31 @@ def source_time(charge: Charge) -> Callable[[Array, Array], Array]:
             return t - jnp.linalg.norm(r - jnp.asarray(charge.position(tr))) / c
 
         def fn_root_find(tr, _):
-            return jnp.linalg.norm(r - jnp.asarray(charge.position(tr))) - c * (t - tr)
+            return (t - tr) - jnp.linalg.norm(r - jnp.asarray(charge.position(tr))) / c
 
         t_init = t - jnp.linalg.norm(r - jnp.asarray(charge.position(t))) / c  # Initial guess
 
         # First use a fixed-point iteration to get close to solution
-        solver_fixed_point = optx.FixedPointIteration(rtol=charge.rtol, atol=charge.atol)
+        solver_fixed_point = optx.FixedPointIteration(
+            rtol=charge.rtol_fixed_point, atol=charge.atol_fixed_point
+        )
         result_fixed_point = optx.fixed_point(
-            fn_fixed_point, solver_fixed_point, t_init, max_steps=charge.max_steps_fixed_point, throw=False
+            fn_fixed_point,
+            solver_fixed_point,
+            t_init,
+            max_steps=charge.max_steps_fixed_point,
+            throw=charge.throw_fixed_point,
         )
         t_fixed_point = result_fixed_point.value
 
         # Use Newton's method to refine the solution
-        solver_newton = optx.Newton(charge.rtol, charge.atol)
+        solver_newton = optx.Newton(rtol=charge.rtol_root_find, atol=charge.atol_root_find)
         result = optx.root_find(
-            fn_root_find, solver_newton, t_fixed_point, max_steps=charge.max_steps_root_find
+            fn_root_find,
+            solver_newton,
+            t_fixed_point,
+            max_steps=charge.max_steps_root_find,
+            throw=charge.throw_root_find,
         )
         return result.value
 

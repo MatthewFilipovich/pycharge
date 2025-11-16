@@ -39,7 +39,12 @@ class Charge:
     position: Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]]
     q: float = e
 
-    rtol: float = 0.0
-    atol: float = 1e-20
+    rtol_fixed_point: float = 0
+    atol_fixed_point: float = 1e-20
     max_steps_fixed_point: int = 256
-    max_steps_root_find: int = 1024
+    throw_fixed_point: bool = False
+
+    rtol_root_find: float = 0.0
+    atol_root_find: float = 1e-20
+    max_steps_root_find: int = 256
+    throw_root_find: bool = True
