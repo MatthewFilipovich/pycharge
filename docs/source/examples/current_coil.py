@@ -78,6 +78,7 @@ output = fn(X, Y, Z, T)
 
 field_names = ["scalar", "vector", "electric", "magnetic"]
 component_names = ["x", "y", "z"]
+extent = (float(x[0]), float(x[-1]), float(y[0]), float(y[-1]))
 
 for key in field_names:
     # Squeeze to remove the singleton z and t dimensions
@@ -87,10 +88,7 @@ for key in field_names:
         fig, ax = plt.subplots(figsize=(8, 7))
         vmax = jnp.max(jnp.abs(field_data)).item()
         norm = colors.SymLogNorm(linthresh=vmax * 1e-5, linscale=1, vmin=-vmax, vmax=vmax)
-
-        im = ax.imshow(
-            field_data.T, origin="lower", cmap="RdBu_r", norm=norm, extent=[x[0], x[-1], y[0], y[-1]]
-        )
+        im = ax.imshow(field_data.T, origin="lower", cmap="RdBu_r", norm=norm, extent=extent)
         fig.colorbar(im, ax=ax, label=f"{key.capitalize()} Potential (V)")
         ax.set_title(f"{key.capitalize()} Potential")
         ax.set_xlabel("x (m)")
@@ -106,9 +104,7 @@ for key in field_names:
             else:
                 norm = colors.SymLogNorm(linthresh=vmax * 1e-5, linscale=1, vmin=-vmax, vmax=vmax)
 
-            im = axes[i].imshow(
-                component_data.T, origin="lower", cmap="RdBu_r", norm=norm, extent=[x[0], x[-1], y[0], y[-1]]
-            )
+            im = axes[i].imshow(component_data.T, origin="lower", cmap="RdBu_r", norm=norm, extent=extent)
             fig.colorbar(im, ax=axes[i], label="Field Strength")
             axes[i].set_title(f"{key.capitalize()} Field ({component_names[i]}-component)")
             axes[i].set_xlabel("x (m)")

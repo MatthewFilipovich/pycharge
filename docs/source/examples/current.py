@@ -83,8 +83,8 @@ B_pycharge = quantities.magnetic[:, 2]
 
 # The total current I is the charge per particle times the number of charges
 # passing a point per second.
-I = num_charges * e * omega / (2 * jnp.pi)
-B_biot_savart = mu_0 * I * R**2 / (2 * (z_axis**2 + R**2) ** (3 / 2))
+current = num_charges * e * omega / (2 * jnp.pi)
+B_biot_savart = mu_0 * current * R**2 / (2 * (z_axis**2 + R**2) ** (3 / 2))
 
 
 # %%
