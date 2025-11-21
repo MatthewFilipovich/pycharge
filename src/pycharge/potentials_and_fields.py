@@ -10,6 +10,7 @@ from jax.typing import ArrayLike
 from scipy.constants import c, epsilon_0, pi
 
 from pycharge.charge import Charge
+from pycharge.utils import acceleration, position, velocity
 
 
 class Quantities(NamedTuple):
@@ -66,11 +67,6 @@ def potentials_and_fields(
     if len(charges) == 0:
         raise ValueError("At least one charge must be provided.")
 
-    position_fns = [
-        lambda t, c=charge: jnp.asarray(c.position(t), dtype=jnp.result_type(0.0)) for charge in charges
-    ]  # Convert to array with consistent float dtype (in case of integers)
-    velocity_fns = [jax.jacobian(pos_fn) for pos_fn in position_fns]
-    acceleration_fns = [jax.jacobian(vel_fn) for vel_fn in velocity_fns]
     source_time_fns = [source_time(charge) for charge in charges]
     qs = jnp.array([charge.q for charge in charges])
 
@@ -100,13 +96,12 @@ def potentials_and_fields(
         Computes the total fields at a single spacetime point (r, t) by summing the contributions from all
         charges.
         """
-
         # Solve for retarded times for each charge
         t_srcs = jnp.stack([fn(r, t) for fn in source_time_fns])
         # Evaluate source properties at the retarded times
-        r_srcs = jnp.stack([pos_fn(tr) for pos_fn, tr in zip(position_fns, t_srcs)])
-        v_srcs = jnp.stack([vel_fn(tr) for vel_fn, tr in zip(velocity_fns, t_srcs)])
-        a_srcs = jnp.stack([acc_fn(tr) for acc_fn, tr in zip(acceleration_fns, t_srcs)])
+        r_srcs = jnp.stack([position(tr, charge) for tr, charge in zip(t_srcs, charges)])
+        v_srcs = jnp.stack([velocity(tr, charge) for tr, charge in zip(t_srcs, charges)])
+        a_srcs = jnp.stack([acceleration(tr, charge) for tr, charge in zip(t_srcs, charges)])
 
         # Compute individual contributions
         calculate_individual_source_vmap = jax.vmap(calculate_individual_source, in_axes=(0, 0, 0, 0, None))
@@ -175,12 +170,12 @@ def source_time(charge: Charge) -> Callable[[Array, Array], Array]:
         """
 
         def fn_fixed_point(tr, _):
-            return t - jnp.linalg.norm(r - jnp.asarray(charge.position(tr))) / c
+            return t - jnp.linalg.norm(r - position(tr, charge)) / c
 
         def fn_root_find(tr, _):
-            return (t - tr) - jnp.linalg.norm(r - jnp.asarray(charge.position(tr))) / c
+            return (t - tr) - jnp.linalg.norm(r - position(tr, charge)) / c
 
-        t_init = t - jnp.linalg.norm(r - jnp.asarray(charge.position(t))) / c  # Initial guess
+        t_init = t - jnp.linalg.norm(r - position(t, charge)) / c  # Initial guess
 
         # First use a fixed-point iteration to get close to solution
         solver_fixed_point = optx.FixedPointIteration(

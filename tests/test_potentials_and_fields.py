@@ -12,7 +12,7 @@ jax.config.update("jax_enable_x64", True)
 def test_stationary_charge(x, y, z):
     """Test quantities for a single stationary charge against Coulomb's law."""
     charge_pos = jnp.array([0.1, -0.2, 0.3])  # Charge not at origin
-    charge = Charge(position=lambda t: charge_pos, q=e)
+    charge = Charge(lambda t: charge_pos, e)
     potentials_and_fields_fn = potentials_and_fields([charge])
 
     t = 0.0
@@ -60,7 +60,7 @@ def test_current_loop_b_field(z_obs):
         y = radius * jnp.sin(omega * t)
         return jnp.array([x, y, 0.0])
 
-    charges = [Charge(position=position, q=q) for _ in range(num_charges)]
+    charges = [Charge(position_fn=position, q=q) for _ in range(num_charges)]
 
     potentials_and_fields_fn = potentials_and_fields(charges)
 
@@ -77,7 +77,7 @@ def test_current_loop_b_field(z_obs):
 
 def test_vectorized_inputs():
     """Test that potentials_and_fields can handle vectorized (array) inputs."""
-    charge = Charge(position=lambda t: jnp.array([0.0, 0.0, 0.0]), q=e)
+    charge = Charge(position_fn=lambda t: jnp.array([0.0, 0.0, 0.0]), q=e)
     potentials_and_fields_fn = potentials_and_fields([charge])
     dim_shape = (3, 4, 5)
 
@@ -96,7 +96,7 @@ def test_vectorized_inputs():
 
 def test_jit_compatibility():
     """Test that potentials_and_fields function is compatible with JAX JIT compilation."""
-    charge = Charge(position=lambda t: jnp.array([0.0, 0.0, 0.0]), q=e)
+    charge = Charge(position_fn=lambda t: jnp.array([0.0, 0.0, 0.0]), q=e)
     potentials_and_fields_fn = potentials_and_fields([charge])
 
     @jax.jit
@@ -124,7 +124,7 @@ def test_zero_charges_raises_error():
 
 def test_xyzt_shape_mismatch_raises_error():
     """Test that potentials_and_fields raises an error for shape mismatch in inputs."""
-    charge = Charge(position=lambda t: jnp.array([0.0, 0.0, 0.0]), q=e)
+    charge = Charge(position_fn=lambda t: jnp.array([0.0, 0.0, 0.0]), q=e)
     potentials_and_fields_fn = potentials_and_fields([charge])
 
     x = jnp.array([0.0, 1.0])

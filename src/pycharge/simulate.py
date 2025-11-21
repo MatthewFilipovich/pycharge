@@ -6,7 +6,7 @@ import jax.numpy as jnp
 from jax import Array
 
 from pycharge.sources import Source
-from pycharge.utils import interpolate_position
+from pycharge.utils import interpolate_position, position, velocity
 
 
 def simulate(
@@ -47,7 +47,7 @@ def simulate(
     def create_initial_state(source: Source) -> Array:
         source_state = jnp.full([len(ts), len(source.charges_0), 2, 3], jnp.nan)
         for charge_idx, charge in enumerate(source.charges_0):
-            pos0, vel0 = charge.position(ts[0]), jax.jacobian(charge.position)(ts[0])
+            pos0, vel0 = position(ts[0], charge), velocity(ts[0], charge)
             source_state = source_state.at[0, charge_idx, :, :].set([pos0, vel0])
 
         return source_state
@@ -81,15 +81,17 @@ def simulate(
     def create_charges(time_idx: int, source_states: tuple[Array, ...]):
         def create_charge(source_idx: int, charge_idx: int):
             charge_0 = sources[source_idx].charges_0[charge_idx]
-            position_0 = charge_0.position
+            position_0_fn = charge_0.position_fn
             source_state = source_states[source_idx]
 
             position_array = source_state[:, charge_idx, 0]
             velocity_array = source_state[:, charge_idx, 1]
             t_end = ts[time_idx]
 
-            updated_position = interpolate_position(ts, position_array, velocity_array, position_0, t_end)
-            charge = replace(charge_0, position=updated_position)
+            updated_position_fn = interpolate_position(
+                ts, position_array, velocity_array, position_0_fn, t_end
+            )
+            charge = replace(charge_0, position_fn=updated_position_fn)
 
             return charge
 

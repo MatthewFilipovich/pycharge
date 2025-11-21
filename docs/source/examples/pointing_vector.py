@@ -53,8 +53,8 @@ def pos_negative_charge(t):
 
 
 # Create the two charges that form the dipole
-charge1 = Charge(position=pos_positive_charge, q=e)
-charge2 = Charge(position=pos_negative_charge, q=-e)
+charge1 = Charge(pos_positive_charge, e)
+charge2 = Charge(pos_negative_charge, -e)
 
 
 # %%

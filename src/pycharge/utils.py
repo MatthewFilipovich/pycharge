@@ -5,7 +5,9 @@ from typing import Callable
 import jax
 import jax.numpy as jnp
 from jax import Array
+from jax.typing import ArrayLike
 
+from pycharge.charge import Charge
 from pycharge.types import Scalar, Vector3
 
 
@@ -13,7 +15,7 @@ def interpolate_position(
     ts: Array,
     position_array: Array,
     velocity_array: Array,
-    position_0: Callable[[Scalar], Vector3],
+    position_0_fn: Callable[[Scalar], Vector3],
     t_end: None | Array = None,
 ) -> Callable[[Scalar], Vector3]:
     t_start = ts[0]
@@ -21,7 +23,7 @@ def interpolate_position(
     t_end_idx = jnp.searchsorted(ts, t_end, side="right") - 1
 
     def before_start(t):
-        return jnp.asarray(position_0(t), dtype=jnp.result_type(0.0))
+        return jnp.asarray(position_0_fn(t), dtype=jnp.result_type(0.0))
 
     def after_end(t):
         return position_array[t_end_idx]
@@ -50,3 +52,15 @@ def interpolate_position(
     return lambda t: jax.lax.cond(
         t <= t_start, before_start, lambda t: jax.lax.cond(t_end <= t, after_end, interpolate, t), t
     )
+
+
+def position(t: ArrayLike, charge: Charge) -> Array:
+    return jnp.asarray(charge.position_fn(t), dtype=jnp.result_type(0.0))
+
+
+def velocity(t: ArrayLike, charge: Charge) -> Array:
+    return jax.jacobian(position)(t, charge)
+
+
+def acceleration(t: ArrayLike, charge: Charge) -> Array:
+    return jax.jacobian(velocity)(t, charge)

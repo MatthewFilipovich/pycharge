@@ -30,7 +30,7 @@ def position(t):
 
 
 # Create the two charges that form the dipole
-charge = Charge(position=position, q=e)
+charge = Charge(position, e)
 quantities_fn = potentials_and_fields([charge])
 jit_quantities_fn = jax.jit(quantities_fn)
 

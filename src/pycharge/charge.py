@@ -8,7 +8,7 @@ from scipy.constants import e
 from pycharge.types import Scalar, Vector3
 
 
-@dataclass()
+@dataclass(frozen=True)
 class Charge:
     """Represents a single point charge.
 
@@ -18,7 +18,7 @@ class Charge:
 
     Parameters
     ----------
-    position : Callable[[Scalar], Vector3]
+    position_fn : Callable[[Scalar], Vector3]
         A time-dependent function that returns the (x, y, z) coordinates
         of the charge. The velocity and acceleration are automatically
         derived from this function using JAX's automatic differentiation.
@@ -37,7 +37,7 @@ class Charge:
 
     """
 
-    position: Callable[[Scalar], Vector3]
+    position_fn: Callable[[Scalar], Vector3]
     q: float = e
 
     fixed_point_rtol: float = 0.0
@@ -49,7 +49,3 @@ class Charge:
     root_find_atol: float = 1e-20
     root_find_max_steps: int = 256
     root_find_throw: bool = True
-
-    def __post_init__(self):
-        if not callable(self.position):
-            raise TypeError(f"position must be callable, got {type(self.position)}")

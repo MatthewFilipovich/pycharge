@@ -79,7 +79,7 @@ def circular_position(t):
 
 
 # Create a Charge object with the defined trajectory and a charge value of +e.
-moving_charge = Charge(position=circular_position, q=e)
+moving_charge = Charge(circular_position, e)
 
 
 # %%

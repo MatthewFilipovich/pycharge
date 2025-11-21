@@ -11,7 +11,7 @@ from pycharge.charge import Charge
 from pycharge.types import Scalar, Vector3
 
 
-@dataclass()
+@dataclass(frozen=True)
 class Source:
     """A container for a dynamic electromagnetic source.
 
@@ -36,13 +36,7 @@ class Source:
     ode_func: Callable
 
 
-def dipole_source(
-    d_0: Vector3,
-    q: float,
-    omega_0: float,
-    m: float,
-    origin: Vector3,
-) -> Source:
+def dipole_source(d_0: Vector3, q: float, omega_0: float, m: float, origin: Vector3) -> Source:
     """Factory for creating a dipole source that behaves as a Lorentz oscillator.
 
     This function creates a ``Source`` object representing a simple dipole,
