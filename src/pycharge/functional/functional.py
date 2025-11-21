@@ -33,7 +33,7 @@ def interpolate_position(
     def after_end(t: Scalar) -> Array:
         return position_array[t_end_idx]
 
-    def interpolate(t) -> Array:
+    def interpolate(t: Scalar) -> Array:
         t_idx = jnp.searchsorted(ts, t, side="right") - 1
 
         pos0 = position_array[t_idx]
