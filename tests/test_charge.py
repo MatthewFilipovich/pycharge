@@ -1,3 +1,5 @@
+import pytest
+
 from pycharge.charge import Charge
 
 
@@ -30,3 +32,10 @@ def test_charge_init_custom_values():
     assert charge.root_find_atol == 1e-9
     assert charge.root_find_max_steps == 50
     assert charge.root_find_throw is False
+
+
+def test_charge_non_callable_position_raises_error():
+    """Test that Charge initialization raises an error for non-callable position."""
+    with pytest.raises(TypeError):
+        non_callable_position = [0.0, 0.0, 0.0]
+        Charge(position=non_callable_position)  # type: ignore

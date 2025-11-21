@@ -1,26 +1,27 @@
 """This module defines utility functions."""
 
-from typing import Callable, Sequence
+from typing import Callable
 
 import jax
 import jax.numpy as jnp
 from jax import Array
-from jax.typing import ArrayLike
+
+from pycharge.types import Scalar, Vector3
 
 
 def interpolate_position(
     ts: Array,
     position_array: Array,
     velocity_array: Array,
-    position_0: Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]],
+    position_0: Callable[[Scalar], Vector3],
     t_end: None | Array = None,
-) -> Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]]:
+) -> Callable[[Scalar], Vector3]:
     t_start = ts[0]
     t_end = ts[-1] if t_end is None else t_end
     t_end_idx = jnp.searchsorted(ts, t_end, side="right") - 1
 
     def before_start(t):
-        return jnp.asarray(position_0(t), dtype=position_array.dtype)
+        return jnp.asarray(position_0(t), dtype=jnp.result_type(0.0))
 
     def after_end(t):
         return position_array[t_end_idx]

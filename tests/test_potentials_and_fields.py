@@ -122,12 +122,6 @@ def test_zero_charges_raises_error():
         potentials_and_fields([])
 
 
-def test_charge_non_callable_position_raises_error():
-    """Test that Charge initialization raises an error for non-callable position."""
-    with pytest.raises(TypeError):
-        potentials_and_fields([Charge(position=[0.0, 0.0, 0.0])])  # type: ignore
-
-
 def test_xyzt_shape_mismatch_raises_error():
     """Test that potentials_and_fields raises an error for shape mismatch in inputs."""
     charge = Charge(position=lambda t: jnp.array([0.0, 0.0, 0.0]), q=e)

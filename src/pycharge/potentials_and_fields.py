@@ -66,10 +66,6 @@ def potentials_and_fields(
     if len(charges) == 0:
         raise ValueError("At least one charge must be provided.")
 
-    for idx, charge in enumerate(charges):
-        if not callable(charge.position):
-            raise TypeError(f"Charge {idx} position must be a callable function of time.")
-
     position_fns = [
         lambda t, c=charge: jnp.asarray(c.position(t), dtype=jnp.result_type(0.0)) for charge in charges
     ]  # Convert to array with consistent float dtype (in case of integers)

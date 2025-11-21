@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from typing import Callable, Sequence
 
 import jax.numpy as jnp
-from jaxtyping import ArrayLike
 from scipy.constants import c, epsilon_0
 
 from pycharge import potentials_and_fields
 from pycharge.charge import Charge
+from pycharge.types import Scalar, Vector3
 
 
 @dataclass()
@@ -37,11 +37,11 @@ class Source:
 
 
 def dipole_source(
-    d_0: ArrayLike | Sequence[ArrayLike],
+    d_0: Vector3,
     q: float,
     omega_0: float,
     m: float,
-    origin: ArrayLike | Sequence[ArrayLike],
+    origin: Vector3,
 ) -> Source:
     """Factory for creating a dipole source that behaves as a Lorentz oscillator.
 
@@ -53,7 +53,7 @@ def dipole_source(
 
     Parameters
     ----------
-    d_0 : ArrayLike | Sequence[ArrayLike]
+    d_0 : Vector3
         The initial displacement vector from the negative to the positive charge.
         This defines the initial dipole moment and the axis of polarization.
     q : float
@@ -63,7 +63,7 @@ def dipole_source(
     m : float
         The mass of each particle in the dipole. The effective mass of the
         oscillator will be m/2.
-    origin : ArrayLike | Sequence[ArrayLike], optional
+    origin : Vector3
         The center of mass of the dipole, which is assumed to be stationary.
 
     Returns
@@ -100,9 +100,7 @@ def dipole_source(
     return Source(charges_0=(Charge(positions_0[0], -q), Charge(positions_0[1], q)), ode_func=dipole_ode_fn)
 
 
-def free_particle_source(
-    position_0: Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]], q: float, m: float
-) -> Source:
+def free_particle_source(position_0: Callable[[Scalar], Vector3], q: float, m: float) -> Source:
     """Factory for creating a free particle source.
 
     This function creates a ``Source`` object representing a single free particle.
@@ -113,7 +111,7 @@ def free_particle_source(
 
     Parameters
     ----------
-    position_0 : Callable[[ArrayLike], ArrayLike | Sequence[ArrayLike]]
+    position_0 : Callable[[Scalar], Vector3]
         A function that defines the initial position of the particle at time t=0.
         Note that this function is only used to get the initial state; the
         trajectory is then determined by the simulation.
