@@ -2,7 +2,7 @@
 Animation
 =========
 """
-
+# type: ignore
 # %%
 
 import sys
@@ -12,7 +12,6 @@ import jax.numpy as jnp
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import animation
 from matplotlib.animation import FuncAnimation
 from scipy.constants import e
 
@@ -54,10 +53,10 @@ x, y, z = np.meshgrid(np.linspace(-lim, lim, grid_size), np.linspace(-lim, lim, 
 
 
 fig, ax = plt.subplots(figsize=(5, 5))
-ax.set_position([0, 0, 1, 1])
+ax.set_position((0.0, 0.0, 1.0, 1.0))
 # Initialie im plot
 im = ax.imshow(
-    np.zeros((grid_size, grid_size)), origin="lower", extent=[-lim, lim, -lim, lim], vmax=7, cmap="viridis"
+    np.zeros((grid_size, grid_size)), origin="lower", extent=(-lim, lim, -lim, lim), vmax=7, cmap="viridis"
 )
 ax.set_xticks([])
 ax.set_yticks([])
@@ -98,5 +97,4 @@ def _init_animate():
 
 n_frames = 36  # Number of frames in gif
 dt = 2 * np.pi / omega / n_frames
-ani = FuncAnimation(fig, _update_animation, frames=n_frames, blit=False, init_func=_init_animate)
-ani.save("oscillating_charge.gif", writer=animation.FFMpegWriter(fps=12), dpi=200)
+FuncAnimation(fig, _update_animation, frames=n_frames, blit=False, init_func=_init_animate)
