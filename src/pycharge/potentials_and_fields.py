@@ -4,13 +4,12 @@ from typing import Callable, Iterable, NamedTuple
 
 import jax
 import jax.numpy as jnp
-import optimistix as optx
 from jax import Array
 from jax.typing import ArrayLike
 from scipy.constants import c, epsilon_0, pi
 
 from pycharge.charge import Charge
-from pycharge.functional import acceleration, position, velocity
+from pycharge.functional import acceleration, position, source_time, velocity
 
 
 class Quantities(NamedTuple):
@@ -67,7 +66,6 @@ def potentials_and_fields(
     if len(charges) == 0:
         raise ValueError("At least one charge must be provided.")
 
-    source_time_fns = [source_time(charge) for charge in charges]
     qs = jnp.array([charge.q for charge in charges])
 
     def quantities_fn(x: ArrayLike, y: ArrayLike, z: ArrayLike, t: ArrayLike) -> Quantities:
@@ -97,7 +95,7 @@ def potentials_and_fields(
         charges.
         """
         # Solve for retarded times for each charge
-        t_srcs = jnp.stack([fn(r, t) for fn in source_time_fns])
+        t_srcs = jnp.stack([source_time(r, t, charge) for charge in charges])
         # Evaluate source properties at the retarded times
         r_srcs = jnp.stack([position(tr, charge) for tr, charge in zip(t_srcs, charges)])
         v_srcs = jnp.stack([velocity(tr, charge) for tr, charge in zip(t_srcs, charges)])
@@ -143,62 +141,3 @@ def potentials_and_fields(
         return Quantities(φ, A, E, B, E1, E2, B1, B2)
 
     return quantities_fn
-
-
-def source_time(charge: Charge) -> Callable[[Array, Array], Array]:
-    """Factory function to create a retarded time solver for a given charge.
-
-    This function returns a new function that, when called with an observation
-    position `r` and observation time `t`, solves the retarded time equation:
-    :math:`c(t - t_r) = |r - r_s(t_r)|`.
-
-    The solver is implemented using ``optimistix.root_find`` with a Newton solver.
-    The solver parameters (tolerances, max steps) are taken from the provided
-    ``charge`` object.
-
-    Args:
-        charge: The ``Charge`` object for which to solve the retarded time.
-
-    Returns:
-        A function that takes an observation position ``r`` (Array) and time ``t`` (Array)
-        and returns the calculated retarded time ``tr`` (Array).
-    """
-
-    def source_time_fn(r: Array, t: Array) -> Array:
-        """
-        Solve for tr such that |r - r_src(tr)| = c * (t - tr).
-        """
-
-        def fn_fixed_point(tr, _):
-            return t - jnp.linalg.norm(r - position(tr, charge)) / c
-
-        def fn_root_find(tr, _):
-            return (t - tr) - jnp.linalg.norm(r - position(tr, charge)) / c
-
-        t_init = t - jnp.linalg.norm(r - position(t, charge)) / c  # Initial guess
-
-        # First use a fixed-point iteration to get close to solution
-        solver_fixed_point = optx.FixedPointIteration(
-            rtol=charge.fixed_point_rtol, atol=charge.fixed_point_atol
-        )
-        result_fixed_point = optx.fixed_point(
-            fn_fixed_point,
-            solver_fixed_point,
-            t_init,
-            max_steps=charge.fixed_point_max_steps,
-            throw=charge.fixed_point_throw,
-        )
-        t_fixed_point = result_fixed_point.value
-
-        # Use Newton's method to refine the solution
-        solver_newton = optx.Newton(rtol=charge.root_find_rtol, atol=charge.root_find_atol)
-        result = optx.root_find(
-            fn_root_find,
-            solver_newton,
-            t_fixed_point,
-            max_steps=charge.root_find_max_steps,
-            throw=charge.root_find_throw,
-        )
-        return result.value
-
-    return source_time_fn
