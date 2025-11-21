@@ -82,14 +82,14 @@ isolated_dipole = dipole_source(
 # single, isolated dipole for comparison.
 
 # JIT-compile the simulation functions for performance
-sim_coupled_fn = jax.jit(simulate([dipole1, dipole2]))
-sim_isolated_fn = jax.jit(simulate([isolated_dipole]))
+sim_coupled_fn = jax.jit(simulate([dipole1, dipole2], ts))
+sim_isolated_fn = jax.jit(simulate([isolated_dipole], ts))
 
 # Run the simulations
 print("Running coupled dipole simulation...")
-coupled_states = sim_coupled_fn(ts)
+coupled_states = sim_coupled_fn()
 print("Running isolated dipole simulation...")
-isolated_state = sim_isolated_fn(ts)
+isolated_state = sim_isolated_fn()
 print("Simulations complete.")
 
 # %%

@@ -1,3 +1,8 @@
+"""
+Coupled Dipoles
+================
+"""
+
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -7,7 +12,7 @@ from pycharge import dipole_source, simulate
 
 jax.config.update("jax_enable_x64", True)
 
-dipole0 = dipole_source(d_0=[0.0, 0.0, 1e-9], q=e, omega_0=100e12 * 2 * jnp.pi, m=m_e)
+dipole0 = dipole_source(d_0=[0.0, 0.0, 1e-9], q=e, omega_0=100e12 * 2 * jnp.pi, m=m_e, origin=[0.0, 0.0, 0.0])
 dipole1 = dipole_source(
     d_0=[0.0, 0.0, 1e-9], q=e, omega_0=100e12 * 2 * jnp.pi, m=m_e, origin=[0.0, 80e-9, 0.0]
 )

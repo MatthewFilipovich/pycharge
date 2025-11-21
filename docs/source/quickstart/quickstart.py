@@ -46,9 +46,9 @@ Let's see it in action.
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from scipy.constants import c, e
+from scipy.constants import c, e, m_e
 
-from pycharge import Charge, potentials_and_fields
+from pycharge import Charge, dipole_source, potentials_and_fields, simulate
 
 # For better precision, you can enable 64-bit floating point numbers in JAX.
 jax.config.update("jax_enable_x64", True)
@@ -178,9 +178,6 @@ plt.show()
 # Here, we simulate a dipole modeled as a **Lorentz oscillator**, a classical
 # analog for a two-level quantum system.
 
-from scipy.constants import m_e
-
-from pycharge import dipole_source, simulate
 
 # %%
 # 1. Create a Dipole Source
@@ -196,6 +193,7 @@ dipole = dipole_source(
     q=e,
     omega_0=100e12 * 2 * jnp.pi,
     m=m_e,
+    origin=[0.0, 0.0, 0.0],
 )
 
 # %%

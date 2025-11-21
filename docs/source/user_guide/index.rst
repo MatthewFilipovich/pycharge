@@ -10,3 +10,4 @@ This section provides detailed explanations and examples on how to use the vario
    point_charges
    lorentz_oscillators
    coupled_LOs
+   numerical_issues
