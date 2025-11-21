@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/MatthewFilipovich/pycharge/blob/v2/docs/source/_static/pycharge_logo.png" width="700px">
+  <img src="https://raw.githubusercontent.com/MatthewFilipovich/pycharge/refs/heads/v2/docs/source/_static/pycharge_logo.png" width="700px">
 </p>
 
 <div align="center">
@@ -13,11 +13,12 @@
 
 </div>
 
+> PyCharge is a differentiable electromagnetics simulation library for moving point charges built on JAX.
+
 <p align="center">
   <img width="300" src="https://raw.githubusercontent.com/MatthewFilipovich/pycharge/master/docs/figs/oscillating_charge.gif">
 </p>
 
-> PyCharge is a differentiable electromagnetics simulation library for moving point charges built on JAX.
 
 
 > [!NOTE]
