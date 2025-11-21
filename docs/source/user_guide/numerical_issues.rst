@@ -1,4 +1,5 @@
-TODO: 
+Numerical Issues
+================
 
 Discuss how we can't accurately represent 1 + 1e-20... important for time.
 
