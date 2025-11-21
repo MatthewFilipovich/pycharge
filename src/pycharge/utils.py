@@ -17,18 +17,18 @@ def interpolate_position(
     velocity_array: Array,
     position_0_fn: Callable[[Scalar], Vector3],
     t_end: None | Array = None,
-) -> Callable[[Scalar], Vector3]:
+) -> Callable[[Scalar], Array]:
     t_start = ts[0]
     t_end = ts[-1] if t_end is None else t_end
     t_end_idx = jnp.searchsorted(ts, t_end, side="right") - 1
 
-    def before_start(t):
+    def before_start(t: Scalar) -> Array:
         return jnp.asarray(position_0_fn(t), dtype=jnp.result_type(0.0))
 
-    def after_end(t):
+    def after_end(t: Scalar) -> Array:
         return position_array[t_end_idx]
 
-    def interpolate(t):
+    def interpolate(t) -> Array:
         t_idx = jnp.searchsorted(ts, t, side="right") - 1
 
         pos0 = position_array[t_idx]

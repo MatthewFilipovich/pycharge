@@ -94,7 +94,7 @@ def dipole_source(d_0: Vector3, q: float, omega_0: float, m: float, origin: Vect
     return Source(charges_0=(Charge(positions_0[0], -q), Charge(positions_0[1], q)), ode_func=dipole_ode_fn)
 
 
-def free_particle_source(position_0: Callable[[Scalar], Vector3], q: float, m: float) -> Source:
+def free_particle_source(position_0_fn: Callable[[Scalar], Vector3], q: float, m: float) -> Source:
     """Factory for creating a free particle source.
 
     This function creates a ``Source`` object representing a single free particle.
@@ -133,4 +133,4 @@ def free_particle_source(position_0: Callable[[Scalar], Vector3], q: float, m: f
 
         return jnp.array([[dr_dt, dv_dt]])
 
-    return Source(charges_0=(Charge(position_0, q),), ode_func=free_particle_ode_fn)
+    return Source(charges_0=(Charge(position_0_fn, q),), ode_func=free_particle_ode_fn)

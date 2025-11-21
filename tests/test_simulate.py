@@ -11,8 +11,8 @@ dipole2 = dipole_source(
     d_0=[0.0, 0.0, 1e-11], q=e, omega_0=100e12 * 2 * jnp.pi, m=m_e, origin=[80e-9, 0.0, 0.0]
 )
 
-free_particle1 = free_particle_source(position_0=lambda t: [1e-9, 0.0, 0.0], q=e, m=m_e)
-free_particle2 = free_particle_source(position_0=lambda t: [-1e-9, 0.0, 0.0], q=-e, m=m_e)
+free_particle1 = free_particle_source(position_0_fn=lambda t: [1e-9, 0.0, 0.0], q=e, m=m_e)
+free_particle2 = free_particle_source(position_0_fn=lambda t: [-1e-9, 0.0, 0.0], q=-e, m=m_e)
 
 
 @pytest.mark.parametrize(
