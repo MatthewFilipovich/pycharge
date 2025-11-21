@@ -1,14 +1,17 @@
-"""This module defines utility functions."""
+"""This module defines functions."""
 
-from typing import Callable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable
 
 import jax
 import jax.numpy as jnp
 from jax import Array
 from jax.typing import ArrayLike
 
-from pycharge.charge import Charge
-from pycharge.types import Scalar, Vector3
+if TYPE_CHECKING:
+    from ..charge import Charge
+    from ..types import Scalar, Vector3
 
 
 def interpolate_position(

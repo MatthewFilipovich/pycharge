@@ -6,7 +6,7 @@ import jax.numpy as jnp
 from jax import Array
 
 from pycharge.sources import Source
-from pycharge.utils import interpolate_position, position, velocity
+from pycharge.functional import interpolate_position, position, velocity
 
 
 def simulate(

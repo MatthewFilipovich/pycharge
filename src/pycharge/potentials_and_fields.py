@@ -10,7 +10,7 @@ from jax.typing import ArrayLike
 from scipy.constants import c, epsilon_0, pi
 
 from pycharge.charge import Charge
-from pycharge.utils import acceleration, position, velocity
+from pycharge.functional import acceleration, position, velocity
 
 
 class Quantities(NamedTuple):
