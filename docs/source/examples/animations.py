@@ -17,6 +17,8 @@ from scipy.constants import e
 
 from pycharge import Charge, potentials_and_fields
 
+jax.config.update("jax_enable_x64", True)
+
 amplitude = 2e-9
 omega = 7.49e16
 

@@ -23,8 +23,7 @@ from scipy.constants import e
 
 from pycharge import Charge, potentials_and_fields
 
-# For better precision, you can enable 64-bit floating point numbers in JAX.
-# jax.config.update("jax_enable_x64", True)
+jax.config.update("jax_enable_x64", True)
 
 
 # %%

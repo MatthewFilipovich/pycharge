@@ -27,7 +27,6 @@ from scipy.constants import c, e, mu_0
 
 from pycharge import Charge, potentials_and_fields
 
-# 64 bit precision for better accuracy in electromagnetic calculations
 jax.config.update("jax_enable_x64", True)
 
 # %%

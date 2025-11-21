@@ -20,7 +20,7 @@ from scipy.constants import e
 
 from pycharge import Charge, potentials_and_fields
 
-# jax.config.update("jax_enable_x64", True)
+jax.config.update("jax_enable_x64", True)
 
 
 # %% Define the position functions of the two charges

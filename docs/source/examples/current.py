@@ -22,6 +22,8 @@ from scipy.constants import e, mu_0
 
 from pycharge import Charge, potentials_and_fields
 
+jax.config.update("jax_enable_x64", True)
+
 # Simulation parameters
 num_charges = 50  # Increase for a better approximation of a continuous current
 R = 1e-3  # Radius of the loop

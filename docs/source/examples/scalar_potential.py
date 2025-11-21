@@ -21,7 +21,7 @@ from scipy.constants import e
 
 from pycharge import Charge, potentials_and_fields
 
-
+jax.config.update("jax_enable_x64", True)
 # %%
 # 2. Define the trajectories for two different charges
 # ----------------------------------------------------

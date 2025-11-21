@@ -26,6 +26,8 @@ from scipy.constants import e, m_e
 
 from pycharge import dipole_source, simulate
 
+jax.config.update("jax_enable_x64", True)
+
 # %%
 # 2. Define Simulation Parameters
 # -------------------------------
