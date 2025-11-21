@@ -1,5 +1,6 @@
 """This module defines tests for functions."""
 
+import jax
 import jax.numpy as jnp
 import pytest
 from scipy.constants import c
@@ -12,6 +13,8 @@ from pycharge.functional.functional import (
     source_time,
     velocity,
 )
+
+jax.config.update("jax_enable_x64", True)
 
 
 @pytest.fixture
@@ -52,24 +55,24 @@ def test_source_time_stationary():
     assert jnp.allclose(tr, expected_tr)
 
 
-def test_source_time_moving():
-    """Tests the source_time function for a moving charge."""
+@pytest.mark.parametrize("t_val", [0.0, 1e-6, 1e-5, 1e-4, -1e-6, -1e-5, -1e-4])
+def test_source_time_moving(t_val):
     v0 = c / 2.0
-    charge = Charge(
-        q=1.0,
-        position_fn=lambda t: jnp.array([v0 * t, 0.0, 0.0]),
-        fixed_point_rtol=1e-8,
-        fixed_point_atol=1e-8,
-        root_find_rtol=1e-8,
-        root_find_atol=1e-8,
-    )
-    r = jnp.array([10.0, 0.0, 0.0])
-    t = jnp.array([0.0])
+    charge = Charge(position_fn=lambda tau: [v0 * tau, 0.0, 0.0])
 
-    # Derived from solving |r - v*tr| = c*(t-tr)
-    expected_tr = (-10.0 - 20.0) / (1.5 * c)
+    r = jnp.array([1000.0, 0.0, 0.0])  # observer at x = 1000 m
+    R = jnp.linalg.norm(r)
+    t_switch = R / v0  # where the physical branch switches
+    t = jnp.array(t_val)
+
+    if t_val <= t_switch:  # Branch: R - v0 * tr >= 0  →  tr = (c * t - R) / (c - v0)
+        expected_tr = (c * t - R) / (c - v0)
+    else:  # Branch: R - v0 * tr < 0   →  tr = (c * t + R) / (c + v0)
+        expected_tr = (c * t + R) / (c + v0)
+
     tr = source_time(r, t, charge)
-    assert jnp.allclose(tr, expected_tr, atol=1e-7)
+    print(tr)
+    assert jnp.allclose(tr, expected_tr)
 
 
 def test_interpolate_position():
