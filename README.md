@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  *JAX-based library for differentiable electromagnetics simulations of moving point charges.*
+  <em>Electromagnetics simulation library for moving point charges, built on JAX</em>
 </p>
 
 <div align="center">
