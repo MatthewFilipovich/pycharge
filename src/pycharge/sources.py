@@ -41,7 +41,7 @@ def dipole_source(
     q: float,
     omega_0: float,
     m: float,
-    origin: ArrayLike | Sequence[ArrayLike] = (0, 0, 0),
+    origin: ArrayLike | Sequence[ArrayLike],
 ) -> Source:
     """Factory for creating a dipole source that behaves as a Lorentz oscillator.
 
@@ -65,7 +65,6 @@ def dipole_source(
         oscillator will be m/2.
     origin : ArrayLike | Sequence[ArrayLike], optional
         The center of mass of the dipole, which is assumed to be stationary.
-        Defaults to (0, 0, 0).
 
     Returns
     -------
@@ -140,6 +139,6 @@ def free_particle_source(
         dr_dt = v
         dv_dt = q / m * (E + jnp.cross(v, B))
 
-        return jnp.array([dr_dt, dv_dt])
+        return jnp.array([[dr_dt, dv_dt]])
 
     return Source(charges_0=(Charge(position_0, q),), ode_func=free_particle_ode_fn)

@@ -20,7 +20,7 @@ def interpolate_position(
     t_end_idx = jnp.searchsorted(ts, t_end, side="right") - 1
 
     def before_start(t):
-        return position_0(t)
+        return jnp.asarray(position_0(t), dtype=position_array.dtype)
 
     def after_end(t):
         return position_array[t_end_idx]

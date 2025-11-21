@@ -68,7 +68,7 @@ def potentials_and_fields(
 
     for idx, charge in enumerate(charges):
         if not callable(charge.position):
-            raise ValueError(f"Charge {idx} position must be a callable function of time.")
+            raise TypeError(f"Charge {idx} position must be a callable function of time.")
 
     position_fns = [
         lambda t, c=charge: jnp.asarray(c.position(t), dtype=jnp.result_type(0.0)) for charge in charges
