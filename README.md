@@ -23,7 +23,7 @@
 
 
 
-> [!NOTE]
+> [!IMPORTANT]
 > **Major update (v2):** PyCharge has been rewritten in JAX with significant API changes. 
 > The legacy NumPy-based version remains available under the [`v1.1.0`](https://github.com/MatthewFilipovich/pycharge/tree/v1.1.0) tag.
 
