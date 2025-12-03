@@ -3,17 +3,16 @@ Scalar Potential from Multiple Charges
 ======================================
 
 This example demonstrates how to calculate the scalar potential from a system
-of multiple point charges. Each charge can have its own unique trajectory and
+of multiple moving point charges. PyCharge applies the principle of
+superposition, computing the contribution from each charge individually and
+summing the results. Each charge can have its own unique trajectory and
 charge value.
-
-PyCharge calculates the total potential by applying the principle of
-superposition: it computes the potential from each charge individually and
-then sums the results.
 """
 
 # %%
-# 1. Import necessary libraries
-# -----------------------------
+# Import necessary libraries
+# --------------------------
+
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -22,13 +21,13 @@ from scipy.constants import e
 from pycharge import Charge, potentials_and_fields
 
 jax.config.update("jax_enable_x64", True)
+
+
 # %%
-# 2. Define the trajectories for two different charges
-# ----------------------------------------------------
-# The first charge moves in a circle. The second charge also moves in a
-# circle but is offset on the y-axis.
-
-
+# Define the trajectories for two different charges
+# --------------------------------------------------
+#
+# First charge: circular trajectory centered at origin
 def position1(t):
     """Circular trajectory for charge 1."""
     x = 1e-10 * jnp.sin(1e18 * t)
@@ -45,21 +44,23 @@ def position2(t):
     return x, y, z
 
 
-# Create a list of charges with different charge values
-charges = [Charge(position1, e), Charge(position2, 0.2 * e)]
+# Create charges with different charge magnitudes
+charges = [
+    Charge(position_fn=position1, q=e),
+    Charge(position_fn=position2, q=0.2 * e),
+]
 
 
 # %%
-# 3. Define the observation grid and calculate the potential
-# ----------------------------------------------------------
-# We create a JIT-compiled function for our system of charges and then
-# call it on a 2D observation grid.
-
+# Define the observation grid and calculate the potential
+# --------------------------------------------------------
+#
+# Create JIT-compiled function for better performance
 quantities_fn = jax.jit(potentials_and_fields(charges))
 
-# Define the grid
-grid_res = 200
-xy_max = 1e-9
+# Define a 2D observation grid in the x-y plane
+grid_res = 200  # Grid resolution
+xy_max = 1e-9  # Grid extends ±1 nanometer
 x = jnp.linspace(-xy_max, xy_max, grid_res)
 y = jnp.linspace(-xy_max, xy_max, grid_res)
 z = jnp.array([0])
@@ -72,20 +73,20 @@ scalar_potential_grid = quantities_fn(X, Y, Z, T).scalar
 
 
 # %%
-# 4. Plot the resulting potential
-# -------------------------------
-# The plot shows the combined scalar potential from both moving charges.
+# Plot the resulting potential
+# ----------------------------
 
-plt.figure(figsize=(8, 6))
-plt.imshow(
+fig, ax = plt.subplots(figsize=(8, 6))
+im = ax.imshow(
     scalar_potential_grid.squeeze().T,
     extent=(-xy_max, xy_max, -xy_max, xy_max),
     origin="lower",
     vmax=10,
     cmap="viridis",
 )
-plt.colorbar(label="Scalar Potential (V)")
-plt.xlabel("X Position (m)")
-plt.ylabel("Y Position (m)")
-plt.title("Scalar Potential of Two Moving Point Charges")
+fig.colorbar(im, ax=ax, label="Scalar Potential (V)")
+ax.set_xlabel("x (m)")
+ax.set_ylabel("y (m)")
+ax.set_title("Scalar Potential of Two Moving Point Charges")
+fig.tight_layout()
 plt.show()

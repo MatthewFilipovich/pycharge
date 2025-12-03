@@ -1,9 +1,16 @@
+"""Animate the Electric Field
+=============================
+
+This example demonstrates how to create an animation of the electric field
+around a single oscillating charge. The visualization combines a heat map
+showing the field magnitude with a quiver plot showing the field direction.
 """
-Animation
-=========
-"""
-# type: ignore
+
 # %%
+# Import necessary libraries
+# --------------------------
+
+from __future__ import annotations
 
 import sys
 
@@ -19,64 +26,113 @@ from pycharge import Charge, potentials_and_fields
 
 jax.config.update("jax_enable_x64", True)
 
-amplitude = 2e-9
-omega = 7.49e16
+
+# %%
+# Define the oscillating charge
+# ------------------------------
+#
+# Amplitude and frequency of oscillation
+amplitude = 2e-9  # 2 nanometers
+omega = 7.49e16  # Angular frequency (rad/s)
 
 
 def position(t):
-    """Position of the positive charge."""
+    """Return the instantaneous position of the oscillating charge."""
+
     x = amplitude * jnp.sin(omega * t)
     return x, 0.0, 0.0
 
 
-# Create the two charges that form the dipole
-charge = Charge(position, e)
-quantities_fn = potentials_and_fields([charge])
-jit_quantities_fn = jax.jit(quantities_fn)
+charge = Charge(position_fn=position, q=e)
+quantities_fn = jax.jit(potentials_and_fields([charge]))
 
-# # Observation grid
 
-lim = 50e-9
-grid_size = 1000
-x, y, z = np.meshgrid(np.linspace(-lim, lim, grid_size), np.linspace(-lim, lim, grid_size), 0, indexing="ij")
+# %%
+# Build the observation grids
+# ----------------------------
+#
+# Create a high-resolution grid for the background field magnitude
+field_limit = 50e-9  # 50 nanometers
+field_grid_size = 600
+x_vals = jnp.linspace(-field_limit, field_limit, field_grid_size)
+y_vals = jnp.linspace(-field_limit, field_limit, field_grid_size)
+z_vals = jnp.array([0.0])
+X, Y, Z = jnp.meshgrid(x_vals, y_vals, z_vals, indexing="ij")
 
+# Create a coarser grid for the quiver plot arrows
+quiver_limit = 46e-9  # Slightly smaller to avoid edge effects
+quiver_grid_size = 21  # Fewer points for clearer arrow visualization
+x_quiver = jnp.linspace(-quiver_limit, quiver_limit, quiver_grid_size)
+y_quiver = jnp.linspace(-quiver_limit, quiver_limit, quiver_grid_size)
+z_quiver = jnp.array([0.0])
+XQ, YQ, ZQ = jnp.meshgrid(x_quiver, y_quiver, z_quiver, indexing="ij")
+
+
+# %%
+# Precompute helper quantities
+# ----------------------------
+
+
+def _normalized_vectors(vectors: jnp.ndarray) -> jnp.ndarray:
+    norms = jnp.linalg.norm(vectors, axis=-1, keepdims=True)
+    norms = jnp.where(norms == 0, 1.0, norms)
+    return vectors / norms
+
+
+initial_field = quantities_fn(X, Y, Z, jnp.zeros_like(X)).electric.squeeze()
+initial_magnitude = np.asarray(jnp.linalg.norm(initial_field, axis=-1).T)
+
+initial_quiver = quantities_fn(XQ, YQ, ZQ, jnp.zeros_like(XQ)).electric.squeeze()
+initial_quiver_vecs = np.asarray(_normalized_vectors(initial_quiver))
+
+
+# %%
+# Animate the electric field
+# --------------------------
 
 fig, ax = plt.subplots(figsize=(5, 5))
 ax.set_position((0.0, 0.0, 1.0, 1.0))
-# Initialie im plot
-im = ax.imshow(
-    np.zeros((grid_size, grid_size)), origin="lower", extent=(-lim, lim, -lim, lim), vmax=7, cmap="viridis"
-)
 ax.set_xticks([])
 ax.set_yticks([])
+
+im = ax.imshow(
+    initial_magnitude,
+    origin="lower",
+    extent=(-field_limit, field_limit, -field_limit, field_limit),
+    cmap="viridis",
+)
 im.set_norm(colors.LogNorm(vmin=1e5, vmax=1e8))
 
-# Quiver plot
-grid_size_quiver = 17
-lim = 46e-9
-x_quiver, y_quiver, z_quiver = np.meshgrid(
-    np.linspace(-lim, lim, grid_size_quiver), np.linspace(-lim, lim, grid_size_quiver), 0, indexing="ij"
+Q = ax.quiver(
+    XQ[..., 0],
+    YQ[..., 0],
+    initial_quiver_vecs[..., 0],
+    initial_quiver_vecs[..., 1],
+    scale_units="xy",
 )
-Q = ax.quiver(x_quiver, y_quiver, x_quiver[:, :, 0], y_quiver[:, :, 0], scale_units="xy")
-pos = ax.scatter(position(0)[0], position(0)[1], s=5, c="red", marker="o")
+pos = ax.scatter(float(position(0.0)[0]), float(position(0.0)[1]), s=10, c="red", marker="o")
 
 
 def _update_animation(frame):
     text = f"\rProcessing frame {frame + 1}/{n_frames}."
     sys.stdout.write(text)
     sys.stdout.flush()
-    t = frame * dt
-    E_total = jit_quantities_fn(x, y, z, jnp.full_like(x, t)).electric.squeeze()
-    E_total_magnitude = jnp.linalg.norm(E_total, axis=-1)
-    im.set_data(E_total_magnitude.T)
 
-    E_total = jit_quantities_fn(x_quiver, y_quiver, z_quiver, jnp.full_like(x_quiver, t)).electric
-    u = E_total[..., 0]
-    v = E_total[..., 1]
-    r = jnp.linalg.norm(E_total, axis=-1)
-    Q.set_UVC(u / r, v / r)
-    pos.set_offsets((position(0)[0], position(0)[1]))  # type: ignore
-    return im
+    t = frame * dt
+    field_quantities = quantities_fn(X, Y, Z, jnp.full_like(X, t)).electric.squeeze()
+    magnitude = np.asarray(jnp.linalg.norm(field_quantities, axis=-1).T)
+    im.set_data(magnitude)
+
+    quiver_quantities = quantities_fn(XQ, YQ, ZQ, jnp.full_like(XQ, t)).electric.squeeze()
+    normalized_quiver = np.asarray(_normalized_vectors(quiver_quantities))
+    u = normalized_quiver[..., 0]
+    v = normalized_quiver[..., 1]
+    Q.set_UVC(u, v)
+
+    current_pos = position(t)
+    pos.set_offsets((float(current_pos[0]), float(current_pos[1])))
+
+    return [im, Q, pos]
 
 
 def _init_animate() -> None:
@@ -86,4 +142,4 @@ def _init_animate() -> None:
 
 n_frames = 36  # Number of frames in gif
 dt = 2 * np.pi / omega / n_frames
-FuncAnimation(fig, _update_animation, frames=n_frames, blit=False, init_func=_init_animate)  # type: ignore
+FuncAnimation(fig, _update_animation, frames=n_frames, blit=False, init_func=_init_animate)

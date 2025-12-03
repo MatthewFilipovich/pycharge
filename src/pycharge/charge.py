@@ -8,6 +8,8 @@ from pycharge.types import Scalar, Vector3
 
 @dataclass(frozen=True)
 class Charge:
+    """Charge!"""
+
     position_fn: Callable[[Scalar], Vector3]
     q: float = e
 

@@ -15,7 +15,7 @@
    api-reference/index
 
 PyCharge Documentation
-==========================
+======================
 
 PyCharge is a differentiable electromagnetics simulation library for moving point charges built on JAX.
 
@@ -43,8 +43,27 @@ Key Features
    .. grid-item-card:: 🛠️ **Fully Differentiable**
       :class-card: sd-bg-light sd-border sd-shadow
 
-      End-to-end differentiability enables gradient-based optimization, control, and learning with physical models.
+      End-to-end differentiability enables gradient-based optimization, control, and inverse design workflows.
 
+Get Started Quickly
+-------------------
+
+.. list-table::
+   :widths: 30 70
+   :header-rows: 0
+
+   * - **New to PyCharge?**
+     - Begin with the :doc:`quickstart/index` to install PyCharge, run your
+       first simulation, and learn the core ideas in a few minutes.
+   * - **Need examples?**
+     - Explore the :doc:`examples/index` gallery for ready-to-run
+       notebooks covering common setups and workflows.
+   * - **Curious about the theory?**
+     - See the :doc:`user-guide/index` for the underlying electromagnetics,
+       modeling choices, and how they map onto the code.
+   * - **Looking for API details?**
+     - Use the :doc:`api-reference/index` for function-by-function
+       documentation, parameters, and return types.
 .. _installation:
 
 Installation

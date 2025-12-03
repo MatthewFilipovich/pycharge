@@ -13,8 +13,9 @@ the simulation approach for magnetostatics.
 """
 
 # %%
-# 1. Import necessary libraries and define parameters
-# ---------------------------------------------------
+# Import necessary libraries
+# --------------------------
+
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -25,19 +26,17 @@ from pycharge import Charge, potentials_and_fields
 jax.config.update("jax_enable_x64", True)
 
 # Simulation parameters
-num_charges = 50  # Increase for a better approximation of a continuous current
-R = 1e-3  # Radius of the loop
-omega = 1e6  # Angular velocity of charges
+num_charges = 50  # Number of discrete charges approximating the current
+R = 1e-3  # Radius of the loop (1 mm)
+omega = 1e6  # Angular velocity (rad/s)
 
 # Define the observation axis (z-axis)
 z_axis = jnp.linspace(-5 * R, 5 * R, 500)
 
 
 # %%
-# 2. Create the charges for the current loop
-# ------------------------------------------
-# We define a factory function that creates a circular trajectory. Then, we
-# create a list of `Charge` objects distributed evenly around the circle.
+# Create the charges for the current loop
+# ----------------------------------------
 
 
 def get_circular_position(omega, phi):
@@ -54,14 +53,12 @@ def get_circular_position(omega, phi):
 
 # Create a list of charges, spaced out by their phase `phi`
 phases = jnp.linspace(0, 2 * jnp.pi, num_charges, endpoint=False)
-charges = [Charge(get_circular_position(omega, phi), q=e) for phi in phases]
+charges = [Charge(position_fn=get_circular_position(omega, phi), q=e) for phi in phases]
 
 
 # %%
-# 3. Calculate the Magnetic Field with PyCharge
-# ---------------------------------------------
-# We set up the observation points along the z-axis and call the JIT-compiled
-# quantities function. We observe at t=0, as the current is in a steady state.
+# Calculate the magnetic field with PyCharge
+# -------------------------------------------
 
 x = jnp.zeros_like(z_axis)
 y = jnp.zeros_like(z_axis)
@@ -76,29 +73,24 @@ B_pycharge = quantities.magnetic[:, 2]
 
 
 # %%
-# 4. Calculate the Analytical Solution
-# ------------------------------------
-# The on-axis magnetic field for a current loop is given by the Biot-Savart law:
-# B_z = (mu_0 * I * R^2) / (2 * (z^2 + R^2)^(3/2))
+# Calculate the analytical solution
+# ----------------------------------
 
-# The total current I is the charge per particle times the number of charges
-# passing a point per second.
 current = num_charges * e * omega / (2 * jnp.pi)
 B_biot_savart = mu_0 * current * R**2 / (2 * (z_axis**2 + R**2) ** (3 / 2))
 
 
 # %%
-# 5. Compare the Results
-# ----------------------
-# We plot both the PyCharge result and the analytical solution. They should
-# match very closely.
+# Compare the results
+# -------------------
 
-plt.figure(figsize=(8, 6))
-plt.plot(z_axis, B_pycharge, label="PyCharge Result")
-plt.plot(z_axis, B_biot_savart, "--", label="Biot-Savart Law (Analytical)")
-plt.xlabel("Position along z-axis (m)")
-plt.ylabel("Magnetic Field (T)")
-plt.title("On-Axis Magnetic Field of a Current Loop")
-plt.legend()
-plt.grid(True)
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.plot(z_axis, B_pycharge, label="PyCharge Result")
+ax.plot(z_axis, B_biot_savart, "--", label="Biot-Savart Law (Analytical)")
+ax.set_xlabel("Position along z-axis (m)")
+ax.set_ylabel("Magnetic Field (T)")
+ax.set_title("On-Axis Magnetic Field of a Current Loop")
+ax.legend()
+ax.grid(True)
+fig.tight_layout()
 plt.show()

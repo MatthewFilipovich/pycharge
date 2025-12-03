@@ -53,6 +53,7 @@ sphinx_gallery_conf = {
 # Matplotlib plot directive configuration
 plot_include_source = True
 plot_html_show_source_link = False
+plot_html_show_formats = False
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

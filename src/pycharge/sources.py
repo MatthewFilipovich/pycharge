@@ -11,6 +11,8 @@ from pycharge.types import Scalar, Vector3
 
 @dataclass(frozen=True)
 class Source:
+    """Source!"""
+
     charges_0: Sequence[Charge]
     ode_func: Callable
 
