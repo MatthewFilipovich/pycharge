@@ -9,9 +9,7 @@ from pycharge.functional import interpolate_position, position, velocity
 from pycharge.sources import Source
 
 
-def simulate(
-    sources: Sequence[Source], ts: Array, print_every_n_timesteps: int = 100
-) -> Callable[[], tuple[Array, ...]]:
+def simulate(sources: Sequence[Source], ts: Array, print_every: int = 100) -> Callable[[], tuple[Array, ...]]:
     "simulate!"
     dts = ts[1:] - ts[:-1]
 
@@ -48,9 +46,9 @@ def simulate(
         return source_states
 
     def print_timestep(time_idx: int):
-        if print_every_n_timesteps:
+        if print_every:
             jax.lax.cond(
-                time_idx % print_every_n_timesteps == 0,
+                time_idx % print_every == 0,
                 lambda: jax.debug.print("Timestep {x}", x=time_idx),
                 lambda: None,
             )
