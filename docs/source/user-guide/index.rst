@@ -7,7 +7,7 @@ This section provides detailed explanations and examples on how to use the vario
    :maxdepth: 1
    :caption: Contents
    
-   point_charges
-   lorentz_oscillators
-   coupled_LOs
-   numerical_issues
+   point-charges
+   lorentz-oscillators
+   coupled-LOs
+   numerical-issues

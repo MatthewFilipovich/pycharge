@@ -9,10 +9,10 @@
 .. toctree::
    :hidden:
 
-   _generated/auto_quickstart/quickstart
-   user_guide/index
-   _generated/auto_examples/index
-   reference/index
+   quickstart/index
+   user-guide/index
+   examples/index
+   api-reference/index
 
 PyCharge Documentation
 ==========================

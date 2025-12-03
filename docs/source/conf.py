@@ -21,13 +21,14 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_gallery.gen_gallery",
     "sphinx_design",
+    "matplotlib.sphinxext.plot_directive",
 ]
 
 autoapi_member_order = "alphabetical"
 autoapi_dirs = ["../../src/pycharge"]
 autoapi_type = "python"
 autoapi_add_toctree_entry = False
-autoapi_keep_files = True
+autoapi_keep_files = False
 autodoc_typehints = "description"
 autoapi_options = [
     "members",
@@ -42,16 +43,16 @@ intersphinx_mapping = {
 }
 
 sphinx_gallery_conf = {
-    "examples_dirs": ["examples", "quickstart", "user_guide"],
-    "gallery_dirs": [
-        "_generated/auto_examples",
-        "_generated/auto_quickstart",
-        "_generated/auto_user_guide",
-    ],
+    "examples_dirs": ["../../examples/"],
+    "gallery_dirs": ["examples"],
     "reference_url": {"pycharge": None},
     "filename_pattern": "^((?!sphinx_skip).)*$",  # Exclude files with 'sphinx_skip' in the name
     "matplotlib_animations": (True, "jshtml"),
 }
+
+# Matplotlib plot directive configuration
+plot_include_source = True
+plot_html_show_source_link = False
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -82,7 +83,7 @@ html_theme_options = {
 }
 
 html_static_path = ["_static"]
-html_sidebars = {"_generated/auto_quickstart/quickstart": []}  # Disable sidebar for specific pages
+html_sidebars = {"quickstart/index": []}  # Disable sidebar for specific pages
 
 
 # -- Custom configuration ----------------------------------------------------

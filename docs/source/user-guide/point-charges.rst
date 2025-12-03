@@ -111,7 +111,7 @@ The velocity and acceleration required for Eq. :eq:`eq6` are derived automatical
 PyCharge supports two main ways to define sources:
 
 - **Predefined Trajectories**: For sources like the one above, where the path is known analytically. You define one or more ``Charge`` objects and pass them to the :func:`pycharge.potentials_and_fields` function.
-- **Dynamic Trajectories**: For sources whose motion is governed by the fields in the system, such as a Lorentz oscillator. These are created using factory functions like :func:`pycharge.sources.dipole_source`, which generate ``Source`` objects containing an ODE that is solved by the :func:`pycharge.simulate` function. See :doc:`lorentz_oscillators` for more details.
+- **Dynamic Trajectories**: For sources whose motion is governed by the fields in the system, such as a Lorentz oscillator. These are created using factory functions like :func:`pycharge.sources.dipole_source`, which generate ``Source`` objects containing an ODE that is solved by the :func:`pycharge.simulate` function. See :doc:`lorentz-oscillators` for more details.
 
 A continuous charge density :math:`\rho` can be approximated in the simulation using numerous point charges within a volume, where the charge value of each point charge depends on :math:`\rho`.
 Similarly, a continuous current density, described by :math:`\mathbf{J}=\rho \mathbf{v}`, can be approximated using evenly spaced point charges traveling along a path, where the charge value of each point charge depends on :math:`\mathbf{J}`.
