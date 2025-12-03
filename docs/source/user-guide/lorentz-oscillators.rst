@@ -61,9 +61,9 @@ valid for non-relativistic velocities since relativistic mass effects are neglec
 PyCharge Implementation
 -----------------------
 
-The driven Lorentz Oscillator equation of motion (Eq. :eq:`eq:LO_equation`) is the core of dynamic dipole simulations in PyCharge. This ODE is solved numerically by the :func:`~pycharge.simulate.simulate` function.
+The driven Lorentz Oscillator equation of motion (Eq. :eq:`eq:LO_equation`) is the core of dynamic dipole simulations in PyCharge. This ODE is solved numerically by the :func:`~pycharge.simulate` function.
 
-You can create a Lorentz Oscillator source using the :func:`~pycharge.sources.dipole_source` factory function. This function automatically constructs the necessary ODE function that ``simulate`` will use to time-step the dipole's state.
+You can create a Lorentz Oscillator source using the :func:`~pycharge.dipole_source` factory function. This function automatically constructs the necessary ODE function that :func:`~pycharge.simulate` will use to time-step the dipole's state.
 
 .. code-block:: python
 
@@ -173,7 +173,7 @@ The total energy :math:`\mathcal{E}` of a dipole, which is the sum of its kineti
 where :math:`\dot d = |\mathbf{\dot d}|`.
 
 .. note::
-   In a simulation, the dipole moment :math:`\mathbf{d}(t)` and its derivative :math:`\mathbf{\dot d}(t)` are calculated from the state array returned by the :func:`~pycharge.simulate.simulate` function. The state array contains the position and velocity of each charge in the dipole at each time step.
+   In a simulation, the dipole moment :math:`\mathbf{d}(t)` and its derivative :math:`\mathbf{\dot d}(t)` are calculated from the state array returned by the :func:`~pycharge.simulate` function. The state array contains the position and velocity of each charge in the dipole at each time step.
 
 Since the total dipole energy :math:`\mathcal{E}` is proportional to the excited-state population, the normalized population can be determined from
 

@@ -12,7 +12,7 @@ The Poynting vector is defined as:
 
 We calculate the Poynting vector for an oscillating electric dipole by
 computing the cross product of the electric and magnetic fields returned
-by the :func:`potentials_and_fields` function.
+by the :func:`~pycharge.potentials_and_fields` function.
 """
 
 # %%

@@ -18,6 +18,7 @@ class Source:
 
 
 def dipole_source(d_0: Vector3, q: float, omega_0: float, m: float, origin: Vector3) -> Source:
+    "dipole_source!"
     d_0 = jnp.asarray(d_0)
     origin = jnp.asarray(origin)
 
@@ -48,6 +49,8 @@ def dipole_source(d_0: Vector3, q: float, omega_0: float, m: float, origin: Vect
 
 
 def free_particle_source(position_0_fn: Callable[[Scalar], Vector3], q: float, m: float) -> Source:
+    "free_particle_source!"
+
     def free_particle_ode_fn(t, u, other_charges):
         r, v = u[0]
         x, y, z = r

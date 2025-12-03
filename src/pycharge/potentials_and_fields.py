@@ -11,6 +11,8 @@ from pycharge.functional import acceleration, position, source_time, velocity
 
 
 class Quantities(NamedTuple):
+    "Quantities!"
+
     scalar: Array
     vector: Array
     electric: Array
@@ -25,6 +27,7 @@ class Quantities(NamedTuple):
 def potentials_and_fields(
     charges: Iterable[Charge],
 ) -> Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], Quantities]:
+    "potentials_and_fields!"
     charges = [charges] if isinstance(charges, Charge) else list(charges)
 
     if len(charges) == 0:

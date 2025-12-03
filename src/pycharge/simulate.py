@@ -12,6 +12,7 @@ from pycharge.sources import Source
 def simulate(
     sources: Sequence[Source], ts: Array, print_every_n_timesteps: int = 100
 ) -> Callable[[], tuple[Array, ...]]:
+    "simulate!"
     dts = ts[1:] - ts[:-1]
 
     def simulate_fn():
