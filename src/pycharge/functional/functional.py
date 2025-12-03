@@ -1,5 +1,3 @@
-"""This module defines functions."""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
@@ -72,10 +70,6 @@ def acceleration(t: ArrayLike, charge: Charge) -> Array:
 
 
 def source_time(r: Array, t: Array, charge: Charge) -> Array:
-    """
-    Solve for tr such that |r - r_src(tr)| = c * (t - tr).
-    """
-
     def fn_fixed_point(tr, _):
         return t - jnp.linalg.norm(r - position(tr, charge)) / c
 

@@ -1,5 +1,3 @@
-"""PyCharge: Differentiable electromagnetics simulation library for moving point charges built on JAX."""
-
 import pycharge.functional as functional
 from pycharge.charge import Charge
 from pycharge.potentials_and_fields import potentials_and_fields
