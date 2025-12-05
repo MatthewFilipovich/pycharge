@@ -4,7 +4,7 @@ Lorentz Oscillators
 The optical interactions between light and matter at the nanometer scale are important phenomena for a variety of research fields, and a rigorous understanding of these interactions requires the use of quantum electrodynamics (QED) theory.  
 However, nanometer-scale structures are often too complex to be solved rigorously using only QED; in these cases, a classical approach that invokes QED results in a phenomenological way can be applied.  
 
-**PyCharge** uses the Lorentz oscillator (LO) model — an approximation derived from quantum theory (e.g., from the time-dependent Schrödinger or quantum master equation) — to simulate the interaction of a bound charge (such as an electron) with light.
+PyCharge uses the Lorentz oscillator (LO) model, an approximation derived from quantum theory (e.g., from the time-dependent Schrödinger), to simulate the interaction of a bound charge (such as an electron) with light.
 
 In the classical model, an oscillating dipole produces electromagnetic radiation that dissipates energy and modifies the self-consistent dipole moment.  
 The recoil force, :math:`\mathbf{F}_\mathrm{r}`, acting on the accelerating point charges in the dipole is called the *radiation reaction* or *radiation damping* force.  
@@ -13,17 +13,25 @@ The equation of motion for an undriven LO (e.g., in vacuum) that includes the ra
 .. math::
    :label: eq:undriven_EOM
 
-   m \mathbf{\ddot r_{\rm dip}}(t) + \omega_0^2 m \mathbf{r_\mathrm{dip}}(t) = \mathbf{F}_\mathrm{r}(t)
+   m \mathbf{\ddot r_{\rm dip}}(t) + \omega_0^2 m \mathbf{r_\mathrm{dip}}(t) = \mathbf{F}_\mathrm{r}(t),
 
 where :math:`\mathbf{r}_{\rm dip}` is the displacement from the LO’s negative charge to its positive charge,  
-:math:`\mathbf{\ddot r_{\rm dip}}` is its second derivative with respect to time, :math:`m` is the effective mass of the LO (discussed below), and :math:`\omega_0` is its natural angular frequency.
+:math:`\mathbf{\ddot r_{\rm dip}}` is its second derivative with respect to time, :math:`\omega_0` is its natural angular frequency, and :math:`m` is the effective mass (also called reduced masss) of the LO, defined as
+
+.. math::
+   :label: eq:eff_mass
+
+   m=\frac{m_1 m_2}{m_1+m_2},
+
+where :math:`m_1` and :math:`m_2` are the masses of the two point charges in the dipole.  
+
 
 The radiation reaction force :math:`\mathbf{F}_\mathrm{r}` acting on the accelerating point charges is described by the Abraham–Lorentz formula for non-relativistic velocities:
 
 .. math::
    :label: eq:Fr
 
-   \mathbf{F}_\mathrm{r}(t)=\frac{q^2}{6\pi\epsilon_0 c^3}\,\mathbf{\dddot r_\mathrm{dip}}(t)
+   \mathbf{F}_\mathrm{r}(t)=\frac{q^2}{6\pi\epsilon_0 c^3}\,\mathbf{\dddot r_\mathrm{dip}}(t),
 
 where :math:`\mathbf{\dddot r_\mathrm{dip}}` is the third derivative of the displacement between the two charges.  
 We can approximate :math:`\mathbf{\dddot r}_\mathrm{dip}\approx -\omega_0^2\mathbf{\dot r}_\mathrm{dip}` in the above equation if the damping introduced by radiation reaction is negligible  
@@ -32,7 +40,7 @@ We can approximate :math:`\mathbf{\dddot r}_\mathrm{dip}\approx -\omega_0^2\math
 .. math::
    :label: eq:dipole_condition
 
-   \frac{q^2 \omega_0}{m} \ll 6\pi \epsilon_0 c^3
+   \frac{q^2 \omega_0}{m} \ll 6\pi \epsilon_0 c^3.
 
 In an inhomogeneous environment, an oscillating electric dipole experiences an external electric field :math:`\mathbf{E}_\mathrm{d}` as a driving force —  
 the component of the total electric field along the polarization direction at the dipole’s origin (center of mass) :math:`\mathbf{R}`,  
@@ -44,16 +52,16 @@ If the above condition is satisfied, the equation of motion for a *driven* LO is
    :label: eq:LO_equation
 
    \mathbf{\ddot d}(t) +\gamma_{0} \mathbf{\dot d}(t) +\omega_{0}^{2} {\bf d}(t)
-   = \frac{q^2}{m} \mathbf{E}_\mathrm{d}(\mathbf{R}, t)
+   = \frac{q^2}{m} \mathbf{E}_\mathrm{d}(\mathbf{R}, t),
 
 where :math:`{\bf d}=q{\bf r_{\rm dip}}` is the dipole moment,  
 :math:`\mathbf{\dot d}` and :math:`\mathbf{\ddot d}` are its first and second derivatives,  
-and :math:`\gamma_0` is the *free-space energy decay rate* given by
+:math:`\gamma_0` is the *free-space energy decay rate* given by
 
 .. math::
    :label: eq:gamma0
 
-   \gamma_0 = \frac{q^2\omega_0^2}{6\pi\epsilon_0c^3m}
+   \gamma_0 = \frac{q^2\omega_0^2}{6\pi\epsilon_0c^3m}.
 
 This equation of motion corresponds to a Lorentzian atom model with transition frequency :math:`\omega_0` and linewidth :math:`\gamma_0` (where :math:`\gamma_0 \ll \omega_0`),  
 valid for non-relativistic velocities since relativistic mass effects are neglected.
@@ -82,34 +90,6 @@ You can create a Lorentz Oscillator source using the :func:`~pycharge.dipole_sou
    # The simulator will calculate the driving field E_d at each step
    # and solve the ODE to find the new dipole moment.
 
-The **effective mass** :math:`m` (also called *reduced mass*) of the dipole is
-
-.. math::
-   :label: eq:eff_mass
-
-   m=\frac{m_1 m_2}{m_1+m_2}
-
-where :math:`m_1` and :math:`m_2` are the masses of the two point charges in the dipole.  
-These charges oscillate about the center-of-mass position :math:`\mathbf{R}`, defined by
-
-.. math::
-
-   \mathbf{R} = \frac{m_1\mathbf{r}_1+m_2\mathbf{r}_2}{m_1+m_2}
-
-where :math:`\mathbf{r}_1` and :math:`\mathbf{r}_2` are the positions of the two charges.  
-Their positions can therefore be written in terms of the displacement vector :math:`\mathbf{r}_\mathrm{dip}` as
-
-.. math::
-   :label: eq:r1
-
-   \mathbf{r}_1 = \mathbf{R} + \frac{m_2}{m_1+m_2}\mathbf{r}_\mathrm{dip}
-
-and
-
-.. math::
-   :label: eq:r2
-
-   \mathbf{r}_2 = \mathbf{R} - \frac{m_1}{m_1+m_2}\mathbf{r}_\mathrm{dip}
 
 ----
 
@@ -123,7 +103,7 @@ where :math:`f` is the **oscillator strength**, defined as
 .. math::
    :label: eq:f
 
-   f = \frac{2m \omega_0 d_0^2}{\hbar q^2}
+   f = \frac{2m \omega_0 d_0^2}{\hbar q^2},
 
 where :math:`d_0 = |\mathbf{d}(t=0)|`.  
 We then recover the standard expression for the **spontaneous emission (SE) rate** :math:`\gamma_{0,\mathrm{TLS}}` from an excited TLS:
@@ -137,7 +117,7 @@ An alternative argument relating dipole moment to radiative decay rate is to equ
 
 .. math::
 
-   \frac{m\omega_0^2 d_0^2}{q^2} = \frac{\hbar\omega_0}{2}
+   \frac{m\omega_0^2 d_0^2}{q^2} = \frac{\hbar\omega_0}{2},
 
 yielding :math:`q^2/m = 2\omega_0 d_0^2/\hbar`, as expected.  
 Using Fermi’s golden rule and the interaction Hamiltonian :math:`H_\mathrm{int} = -{\bf d} \cdot \hat{\bf E}`,  
@@ -146,12 +126,12 @@ we obtain rate equations for the populations of an isolated TLS in vacuum:
 .. math::
    :label: eq:ne
 
-   \dot n_\mathrm{e}(t) = -\gamma_0 n_\mathrm{e}(t)
+   \dot n_\mathrm{e}(t) = -\gamma_0 n_\mathrm{e}(t),
 
 .. math::
    :label: eq:ng
 
-   \dot n_\mathrm{g}(t) = \gamma_0 n_\mathrm{e}(t)
+   \dot n_\mathrm{g}(t) = \gamma_0 n_\mathrm{e}(t),
 
 where :math:`n_g` and :math:`n_e` are the populations of the ground and excited states, respectively (:math:`n_g+n_e=1`).  
 Here, :math:`\gamma_0` is identical to the Einstein *A coefficient*,  
@@ -168,7 +148,7 @@ The total energy :math:`\mathcal{E}` of a dipole, which is the sum of its kineti
 .. math::
    :label: eq:dipoleE
 
-   \mathcal{E}(t) = \frac{m \omega_0^2}{2q^2} d^2(t) + \frac{m}{2q^2} \dot d^2(t)
+   \mathcal{E}(t) = \frac{m \omega_0^2}{2q^2} d^2(t) + \frac{m}{2q^2} \dot d^2(t),
 
 where :math:`\dot d = |\mathbf{\dot d}|`.
 
@@ -180,14 +160,14 @@ Since the total dipole energy :math:`\mathcal{E}` is proportional to the excited
 .. math::
    :label: eq:ne_energy
 
-   n_e(t)=\frac{\mathcal{E}(t)}{\max (\mathcal{E})}
+   n_e(t)=\frac{\mathcal{E}(t)}{\max (\mathcal{E})}.
 
 ----
 
 .. rubric:: References
 
-[1] L. Novotny and B. Hecht, *Principles of Nano-Optics*, Ch. 8  
+- L. Novotny and B. Hecht, *Principles of Nano-Optics*, Ch. 8  
 
-[2] P. Milonni and J. Eberly, *Lasers Physics*, Ch. 3  
+- P. Milonni and J. Eberly, *Lasers Physics*, Ch. 3  
 
-[3] D. J. Griffiths, *Introduction to Electrodynamics*, Ch. 11
+- D. J. Griffiths, *Introduction to Electrodynamics*, Ch. 11

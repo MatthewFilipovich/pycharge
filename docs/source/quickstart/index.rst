@@ -58,7 +58,7 @@ predefined trajectories.
 2. Define a charge trajectory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Provide a callable that accepts time ``t`` and returns ``(x, y, z)``. PyCharge
+Provide a function that accepts time ``t`` and returns ``(x, y, z)``. PyCharge
 will differentiate this trajectory automatically to obtain velocity and
 acceleration, so you only need the position.
 
@@ -216,7 +216,7 @@ encapsulates the dipole's initial separation, physical parameters, and ODE.
 We next construct the simulation function that executes the electrodynamics simulation over 40,000 steps 
 with a time step of ``1e-18`` seconds. The helper :func:`~pycharge.simulate` accepts a list of 
 :class:`~pycharge.Source` objects and an array of discrete evaluation times, and returns a function that runs 
-the simulation. For best performance, JIT-compile the returned callable with :func:`jax.jit`.
+the simulation. For best performance, JIT-compile the returned function with :func:`jax.jit`.
 
 .. plot::
     :context:

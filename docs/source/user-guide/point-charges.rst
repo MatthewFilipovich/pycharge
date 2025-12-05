@@ -38,7 +38,7 @@ The fields are obtained from the potentials by the usual relations
    \mathbf{B}(\mathbf{r}, t) = \nabla \times \mathbf{A}(\mathbf{r}, t).
 
 Carrying out the differentiations and evaluating all source quantities at the
-retarded time yields the explicit expressions for the fields: 
+retarded time :math:`t_r` yields the explicit expressions for the fields: 
 
 .. math::
    :label: eq8
@@ -72,14 +72,13 @@ library, a JAX-native optimization framework. By default, PyCharge uses a
 Newton-style solver that is fully differentiable.
 
 PyCharge supports calculating the fields for an arbitrary number of point charges by using the
-superposition principle: the total scalar and vector potentials and the total
-fields are obtained by summing the contributions from each point charge.
+superposition principle: the total potentials and fields are obtained by summing the contributions from each 
+point charge.
 
 In PyCharge, each point charge is represented by a :class:`~pycharge.Charge`
 object, which is initialized with a user-supplied trajectory function that
-accepts time ``t`` and returns the position tuple ``(x, y, z)``. Velocity and
-acceleration—required for Eq. :eq:`eq8`—are computed automatically using JAX’s
-differentiation utilities (:meth:`jax.jacobian`).
+accepts time ``t`` and returns the position tuple ``(x, y, z)``. Velocity and acceleration, which are required
+for Eq. :eq:`eq8`, are computed using JAX's automatic differentiation engine through :meth:`jax.jacobian`.
 
 Defining a :class:`~pycharge.Charge`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -116,15 +115,13 @@ The charge and current densities of a point charge :math:`q` following a traject
 
    \rho(\mathbf{r}, t) = q\,\delta\bigl[\mathbf{r} - \mathbf{r}_s(t)\bigr],
 
-and
-
 .. math::
    :label: eq2
 
    \mathbf{J}(\mathbf{r}, t) = q\,\mathbf{v}_s(t)\,\delta\bigl[\mathbf{r} - \mathbf{r}_s(t)\bigr].
 
 
-A continuous charge density :math:`\rho(\mathbf{r})` may be approximated by
+A continuous charge density :math:`\rho(\mathbf{r})` can be approximated by
 populating a region with many point charges whose individual charges are set
 according to the desired density. Similarly, a current density
 :math:`\mathbf{J}=\rho\mathbf{v}` can be approximated using point charges moving
