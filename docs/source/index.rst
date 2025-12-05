@@ -55,16 +55,13 @@ Get Started Quickly
    * - **New to PyCharge?**
      - Begin with the :doc:`quickstart/index` to install PyCharge, run your
        first simulation, and learn the core ideas in a few minutes.
+   * - **Curious about the theory?**
+     - See the :doc:`user-guide/index` for the underlying electromagnetics and how they map onto the code.
    * - **Need examples?**
      - Explore the :doc:`examples/index` gallery for ready-to-run
        notebooks covering common setups and workflows.
-   * - **Curious about the theory?**
-     - See the :doc:`user-guide/index` for the underlying electromagnetics,
-       modeling choices, and how they map onto the code.
    * - **Looking for API details?**
-     - Use the :doc:`api-reference/index` for function-by-function
-       documentation, parameters, and return types.
-.. _installation:
+     - Use the :doc:`api-reference/index` for documentation of all functions and classes.
 
 Installation
 ------------
