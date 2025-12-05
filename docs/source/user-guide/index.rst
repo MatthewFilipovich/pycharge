@@ -1,13 +1,13 @@
 User Guide
 ===========
 
-This section provides detailed explanations and examples on how to use the various features of PyCharge, including defining sources, calculating potentials and fields, and visualizing results.
+This section discusses the underlying physics in PyCharge simulations.
 
 .. toctree::
    :maxdepth: 1
    :caption: Contents
-   
+
+   why-pycharge
    point-charges
    lorentz-oscillators
    coupled-LOs
-   numerical-issues

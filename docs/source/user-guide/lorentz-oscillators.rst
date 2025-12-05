@@ -187,5 +187,7 @@ Since the total dipole energy :math:`\mathcal{E}` is proportional to the excited
 .. rubric:: References
 
 [1] L. Novotny and B. Hecht, *Principles of Nano-Optics*, Ch. 8  
+
 [2] P. Milonni and J. Eberly, *Lasers Physics*, Ch. 3  
+
 [3] D. J. Griffiths, *Introduction to Electrodynamics*, Ch. 11
