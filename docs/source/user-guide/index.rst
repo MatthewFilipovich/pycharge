@@ -1,7 +1,7 @@
 User Guide
 ===========
 
-This section discusses the underlying physics in PyCharge simulations.
+This guide discusses the underlying physics used in PyCharge simulations.
 
 .. toctree::
    :maxdepth: 1
