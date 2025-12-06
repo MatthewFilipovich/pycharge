@@ -1,4 +1,4 @@
-"""Animate the Electric Field
+"""Animate Oscillating Charge
 =============================
 
 This example demonstrates how to create an animation of the electric field
@@ -9,9 +9,6 @@ showing the field magnitude with a quiver plot showing the field direction.
 # %%
 # Import necessary libraries
 # --------------------------
-
-from __future__ import annotations
-
 import sys
 
 import jax
@@ -33,13 +30,13 @@ jax.config.update("jax_enable_x64", True)
 #
 # Amplitude and frequency of oscillation
 amplitude = 2e-9  # 2 nanometers
-omega = 7.49e16  # Angular frequency (rad/s)
+omega = 7.5e16  # Angular frequency (rad/s)
 
 
 def position(t):
     """Return the instantaneous position of the oscillating charge."""
 
-    x = amplitude * jnp.sin(omega * t)
+    x = amplitude * jnp.cos(omega * t)
     return x, 0.0, 0.0
 
 
@@ -53,7 +50,7 @@ quantities_fn = jax.jit(potentials_and_fields([charge]))
 #
 # Create a high-resolution grid for the background field magnitude
 field_limit = 50e-9  # 50 nanometers
-field_grid_size = 600
+field_grid_size = 300
 x_vals = jnp.linspace(-field_limit, field_limit, field_grid_size)
 y_vals = jnp.linspace(-field_limit, field_limit, field_grid_size)
 z_vals = jnp.array([0.0])
@@ -140,6 +137,6 @@ def _init_animate() -> None:
     pass  # pylint: disable=unnecessary-pass
 
 
-n_frames = 36  # Number of frames in gif
+n_frames = 32  # Number of frames in gif
 dt = 2 * np.pi / omega / n_frames
 FuncAnimation(fig, _update_animation, frames=n_frames, blit=False, init_func=_init_animate)

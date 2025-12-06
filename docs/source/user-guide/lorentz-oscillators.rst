@@ -170,4 +170,4 @@ Since the total dipole energy :math:`\mathcal{E}` is proportional to the excited
 
 - P. Milonni and J. Eberly, *Lasers Physics*, Ch. 3  
 
-- D. J. Griffiths, *Introduction to Electrodynamics*, Ch. 11
+- D.J. Griffiths, *Introduction to Electrodynamics*, Ch. 11

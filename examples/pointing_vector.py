@@ -1,18 +1,10 @@
-"""
-Poynting Vector Visualization
-============================
+r"""Poynting Vector
+================
 
-This example demonstrates how to calculate and visualize the Poynting vector,
-which represents the directional energy flux of an electromagnetic field.
-The Poynting vector is defined as:
-
-.. math::
-
-   \mathbf{S} = \\frac{1}{\mu_0} \mathbf{E} \\times \mathbf{B}
-
-We calculate the Poynting vector for an oscillating electric dipole by
-computing the cross product of the electric and magnetic fields returned
-by the :func:`~pycharge.potentials_and_fields` function.
+This example visualizes the `Poynting vector <https://en.wikipedia.org/wiki/Poynting_vector>`_
+for an oscillating electric dipole. The Poynting vector
+:math:`\mathbf{S} = \frac{1}{\mu_0} \mathbf{E} \times \mathbf{B}` represents the
+directional energy flux of the electromagnetic field.
 """
 
 # %%
@@ -30,78 +22,95 @@ jax.config.update("jax_enable_x64", True)
 
 
 # %%
-# Define the source: an oscillating dipole
-# -----------------------------------------
+# Define the oscillating dipole
+# ------------------------------
+#
+# An oscillating dipole consists of two charges with equal magnitude but opposite
+# sign, oscillating harmonically along the x-axis.
 
 amplitude = 5e-11  # 50 picometers
-# Set frequency such that max velocity is 80% of the speed of light
-omega = (0.8 * c) / amplitude
+omega = (0.8 * c) / amplitude  # Angular frequency (80% speed of light at max velocity)
+charge_magnitude = e  # Elementary charge (1.6e-19 C)
 
 
-def pos_positive_charge(t):
-    """Position of the positive charge."""
-    x = amplitude * jnp.sin(omega * t)
-    return x, 0.0, 0.0
+def positive_charge_position(t):
+    """Position of the positive charge oscillating along x-axis."""
+    return (amplitude * jnp.sin(omega * t), 0.0, 0.0)
 
 
-def pos_negative_charge(t):
-    """Position of the negative charge."""
-    x = -amplitude * jnp.sin(omega * t)
-    return x, 0.0, 0.0
+def negative_charge_position(t):
+    """Position of the negative charge oscillating along x-axis."""
+    return (-amplitude * jnp.sin(omega * t), 0.0, 0.0)
 
 
-# Create the two charges that form the dipole
-charge1 = Charge(position_fn=pos_positive_charge, q=e)
-charge2 = Charge(position_fn=pos_negative_charge, q=-e)
-
-
-# %%
-# Set up the calculation
-# ----------------------
-
-quantities_fn = potentials_and_fields([charge1, charge2])
-jit_quantities_fn = jax.jit(quantities_fn)
+charges = [
+    Charge(position_fn=positive_charge_position, q=charge_magnitude),
+    Charge(position_fn=negative_charge_position, q=-charge_magnitude),
+]
 
 
 # %%
-# Define observation grid and calculate fields
-# ---------------------------------------------
+# Set up the observation grid
+# ----------------------------
 #
-# Create a high-resolution 2D grid in the x-y plane
-grid_size = 800
-xy_max = 1e-9  # 1 nanometer
-x_grid = jnp.linspace(-xy_max, xy_max, grid_size)
-y_grid = jnp.linspace(-xy_max, xy_max, grid_size)
-z_grid = jnp.array([0.0])
-t_grid = jnp.array([0.0])
+# Create a 2D grid in the x-y plane to visualize the Poynting vector.
 
-X, Y, Z, T = jnp.meshgrid(x_grid, y_grid, z_grid, t_grid, indexing="ij")
+grid_res = 800
+grid_extent = 1e-9  # ±1 nm
 
-# Calculate all electromagnetic quantities on the grid
-quantities = jit_quantities_fn(X, Y, Z, T)
+x = jnp.linspace(-grid_extent, grid_extent, grid_res)
+y = jnp.linspace(-grid_extent, grid_extent, grid_res)
+z = jnp.array([0.0])
+t = jnp.array([0.0])  # Snapshot at t=0
+
+X, Y, Z, T = jnp.meshgrid(x, y, z, t, indexing="ij")
 
 
 # %%
-# Calculate and plot the Poynting vector
-# ---------------------------------------
+# Calculate electromagnetic quantities
+# ------------------------------------
 #
-# Compute S = (1/mu_0) * E × B
-poynting_vector = jnp.cross(quantities.electric, quantities.magnetic, axis=-1) * (1 / mu_0)
+# Compute all potentials and fields at once using a JIT-compiled function.
+
+calculate_fields = jax.jit(potentials_and_fields(charges))
+result = calculate_fields(X, Y, Z, T)
+
+# Extract field components
+electric_field = result.electric.squeeze()
+magnetic_field = result.magnetic.squeeze()
+
+extent = (float(x[0]), float(x[-1]), float(y[0]), float(y[-1]))
+
+
+# %%
+# Calculate Poynting vector
+# -------------------------
+#
+# The Poynting vector :math:`\mathbf{S} = \frac{1}{\mu_0} \mathbf{E} \times \mathbf{B}`
+# describes the directional energy flux density of the electromagnetic field.
+
+poynting_vector = jnp.cross(electric_field, magnetic_field, axis=-1) / mu_0
 poynting_magnitude = jnp.linalg.norm(poynting_vector, axis=-1)
+
+
+# %%
+# Poynting vector magnitude
+# -------------------------
+#
+# The magnitude shows the energy flux density radiating from the oscillating dipole.
+# The energy flows outward, strongest along directions perpendicular to the dipole axis.
 
 fig, ax = plt.subplots(figsize=(8, 6))
 im = ax.imshow(
-    poynting_magnitude.squeeze().T,
-    extent=(-xy_max, xy_max, -xy_max, xy_max),
+    poynting_magnitude.T,
     origin="lower",
-    vmax=2e19,
     cmap="inferno",
+    extent=extent,
+    vmax=2e19,
 )
-fig.colorbar(im, ax=ax, label=r"$||\mathbf{S}||$ (W/m$^2$)")
+fig.colorbar(im, ax=ax, label=r"$|\mathbf{S}|$ (W/m²)")
 ax.set_xlabel("x (m)")
 ax.set_ylabel("y (m)")
-ax.set_title("Poynting Vector Magnitude of an Oscillating Dipole")
+ax.set_title("Poynting Vector Magnitude")
 fig.tight_layout()
 plt.show()
-
-# %%
