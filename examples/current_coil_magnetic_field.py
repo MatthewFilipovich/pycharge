@@ -1,5 +1,5 @@
 """Current Coil Magnetic Field
-===========================
+==============================
 
 This example visualizes the magnetic field produced by a current coil and compares
 it with the analytical Biot-Savart law solution. We model the coil using discrete

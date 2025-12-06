@@ -180,8 +180,8 @@ def plot_field(vector_field, title, cbar_label, streamlines=False, skip=10):
 # ----------------
 #
 # The scalar potential :math:`\phi` exhibits the characteristic dipole pattern.
-# For an oscillating dipole, the potential varies in time and includes retardation
-# effects that cause the field pattern to propagate outward as electromagnetic radiation.
+# For an oscillating dipole, the potential varies in time and the field pattern propagates outward as
+# electromagnetic radiation.
 
 plot_field_2d(scalar_potential, title="Scalar Potential", cbar_label="Scalar Potential (V)", cmap="RdBu_r")
 

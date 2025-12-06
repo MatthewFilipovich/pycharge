@@ -1,5 +1,5 @@
 r"""Poynting Vector
-================
+===================
 
 This example visualizes the `Poynting vector <https://en.wikipedia.org/wiki/Poynting_vector>`_
 for an oscillating electric dipole. The Poynting vector

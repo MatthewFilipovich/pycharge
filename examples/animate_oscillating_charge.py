@@ -9,12 +9,9 @@ showing the field magnitude with a quiver plot showing the field direction.
 # %%
 # Import necessary libraries
 # --------------------------
-import sys
-
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib import colors
 from matplotlib.animation import FuncAnimation
 from scipy.constants import e
@@ -35,52 +32,54 @@ omega = 7.5e16  # Angular frequency (rad/s)
 
 def position(t):
     """Return the instantaneous position of the oscillating charge."""
-
-    x = amplitude * jnp.cos(omega * t)
-    return x, 0.0, 0.0
+    return amplitude * jnp.cos(omega * t), 0.0, 0.0
 
 
 charge = Charge(position_fn=position, q=e)
 quantities_fn = jax.jit(potentials_and_fields([charge]))
 
-
 # %%
 # Build the observation grids
 # ----------------------------
-#
-# Create a high-resolution grid for the background field magnitude
-field_limit = 50e-9  # 50 nanometers
-field_grid_size = 300
-x_vals = jnp.linspace(-field_limit, field_limit, field_grid_size)
-y_vals = jnp.linspace(-field_limit, field_limit, field_grid_size)
-z_vals = jnp.array([0.0])
-X, Y, Z = jnp.meshgrid(x_vals, y_vals, z_vals, indexing="ij")
 
-# Create a coarser grid for the quiver plot arrows
-quiver_limit = 46e-9  # Slightly smaller to avoid edge effects
-quiver_grid_size = 21  # Fewer points for clearer arrow visualization
-x_quiver = jnp.linspace(-quiver_limit, quiver_limit, quiver_grid_size)
-y_quiver = jnp.linspace(-quiver_limit, quiver_limit, quiver_grid_size)
-z_quiver = jnp.array([0.0])
-XQ, YQ, ZQ = jnp.meshgrid(x_quiver, y_quiver, z_quiver, indexing="ij")
+# High-resolution grid for background magnitude
+limit = 50e-9  # 50 nanometers
+n_points = 301  # Odd number ensures center point at (0, 0)
+x = jnp.linspace(-limit, limit, n_points)
+y = jnp.linspace(-limit, limit, n_points)
 
+# Stride for quiver arrows along axes only
+quiver_stride = 15
 
 # %%
-# Precompute helper quantities
-# ----------------------------
+# Precompute all frames
+# ---------------------
+
+n_frames = 32
+times = jnp.linspace(0, 2 * jnp.pi / omega, n_frames, endpoint=False)
 
 
-def _normalized_vectors(vectors: jnp.ndarray) -> jnp.ndarray:
-    norms = jnp.linalg.norm(vectors, axis=-1, keepdims=True)
-    norms = jnp.where(norms == 0, 1.0, norms)
-    return vectors / norms
+def compute_fields(x_vals, y_vals, times):
+    """Compute electric fields on a grid for all time frames.
+
+    Returns arrays with shape (n_frames, n_y, n_x, 3) where the spatial
+    dimensions are ordered as (y, x) to match matplotlib conventions.
+    """
+    t, y_grid, x_grid, z = jnp.meshgrid(times, y_vals, x_vals, jnp.array([0.0]), indexing="ij")
+    return quantities_fn(x_grid, y_grid, z, t).electric.squeeze(axis=-2)
 
 
-initial_field = quantities_fn(X, Y, Z, jnp.zeros_like(X)).electric.squeeze()
-initial_magnitude = np.asarray(jnp.linalg.norm(initial_field, axis=-1).T)
+# Compute fields on both grids
+E = compute_fields(x, y, times)  # (n_frames, n_y, n_x, 3)
 
-initial_quiver = quantities_fn(XQ, YQ, ZQ, jnp.zeros_like(XQ)).electric.squeeze()
-initial_quiver_vecs = np.asarray(_normalized_vectors(initial_quiver))
+# Extract magnitude and direction for quiver (subsampled)
+E_magnitude = jnp.linalg.norm(E, axis=-1)  # (n_frames, n_y, n_x)
+E_quiver = E[:, ::quiver_stride, ::quiver_stride, :]  # Subsample for arrows
+E_quiver_norm = jnp.linalg.norm(E_quiver, axis=-1, keepdims=True)
+E_quiver_dir = E_quiver / jnp.where(E_quiver_norm == 0, 1.0, E_quiver_norm)
+
+# Charge x-position at each frame
+charge_x = amplitude * jnp.cos(omega * times)
 
 
 # %%
@@ -89,54 +88,26 @@ initial_quiver_vecs = np.asarray(_normalized_vectors(initial_quiver))
 
 fig, ax = plt.subplots(figsize=(5, 5))
 ax.set_position((0.0, 0.0, 1.0, 1.0))
-ax.set_xticks([])
-ax.set_yticks([])
+ax.axis("off")
 
 im = ax.imshow(
-    initial_magnitude,
+    E_magnitude[0],
     origin="lower",
-    extent=(-field_limit, field_limit, -field_limit, field_limit),
+    extent=(-limit, limit, -limit, limit),
     cmap="viridis",
+    norm=colors.LogNorm(vmin=1e5, vmax=1e8),
 )
-im.set_norm(colors.LogNorm(vmin=1e5, vmax=1e8))
 
-Q = ax.quiver(
-    XQ[..., 0],
-    YQ[..., 0],
-    initial_quiver_vecs[..., 0],
-    initial_quiver_vecs[..., 1],
-    scale_units="xy",
-)
-pos = ax.scatter(float(position(0.0)[0]), float(position(0.0)[1]), s=10, c="red", marker="o")
+X, Y = jnp.meshgrid(x[::quiver_stride], y[::quiver_stride], indexing="xy")
+quiver = ax.quiver(X, Y, E_quiver_dir[0, :, :, 0], E_quiver_dir[0, :, :, 1], scale_units="xy")
+charge_marker = ax.scatter(charge_x[0], 0.0, s=10, c="red")
 
 
 def _update_animation(frame):
-    text = f"\rProcessing frame {frame + 1}/{n_frames}."
-    sys.stdout.write(text)
-    sys.stdout.flush()
-
-    t = frame * dt
-    field_quantities = quantities_fn(X, Y, Z, jnp.full_like(X, t)).electric.squeeze()
-    magnitude = np.asarray(jnp.linalg.norm(field_quantities, axis=-1).T)
-    im.set_data(magnitude)
-
-    quiver_quantities = quantities_fn(XQ, YQ, ZQ, jnp.full_like(XQ, t)).electric.squeeze()
-    normalized_quiver = np.asarray(_normalized_vectors(quiver_quantities))
-    u = normalized_quiver[..., 0]
-    v = normalized_quiver[..., 1]
-    Q.set_UVC(u, v)
-
-    current_pos = position(t)
-    pos.set_offsets((float(current_pos[0]), float(current_pos[1])))
-
-    return [im, Q, pos]
+    im.set_data(E_magnitude[frame])
+    quiver.set_UVC(E_quiver_dir[frame, :, :, 0], E_quiver_dir[frame, :, :, 1])
+    charge_marker.set_offsets([[charge_x[frame], 0.0]])
+    return [im, quiver, charge_marker]
 
 
-def _init_animate() -> None:
-    """Necessary for matplotlib animate."""
-    pass  # pylint: disable=unnecessary-pass
-
-
-n_frames = 32  # Number of frames in gif
-dt = 2 * np.pi / omega / n_frames
-FuncAnimation(fig, _update_animation, frames=n_frames, blit=False, init_func=_init_animate)
+FuncAnimation(fig, _update_animation, frames=n_frames, blit=False)
