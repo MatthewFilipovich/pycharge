@@ -8,9 +8,9 @@ from scipy.constants import c
 from pycharge.charge import Charge
 from pycharge.functional.functional import (
     acceleration,
+    emission_time,
     interpolate_position,
     position,
-    source_time,
     velocity,
 )
 
@@ -51,7 +51,7 @@ def test_source_time_stationary():
     t = jnp.array([10.0])
 
     expected_tr = t - jnp.linalg.norm(r) / c
-    tr = source_time(r, t, charge)
+    tr = emission_time(r, t, charge)
     assert jnp.allclose(tr, expected_tr)
 
 
@@ -70,7 +70,7 @@ def test_source_time_moving(t_val):
     else:  # Branch: R - v0 * tr < 0   →  tr = (c * t + R) / (c + v0)
         expected_tr = (c * t + R) / (c + v0)
 
-    tr = source_time(r, t, charge)
+    tr = emission_time(r, t, charge)
     print(tr)
     assert jnp.allclose(tr, expected_tr)
 

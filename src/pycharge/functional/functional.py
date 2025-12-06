@@ -1,9 +1,4 @@
-"""Core functional utilities for charge dynamics and retarded time calculations.
-
-This module provides essential functions for computing charge positions, velocities,
-accelerations, and retarded times needed for electromagnetic field calculations using
-the Liénard-Wiechert potentials.
-"""
+"""Core utility functions used in PyCharge."""
 
 from __future__ import annotations
 
@@ -28,38 +23,22 @@ def interpolate_position(
     position_0_fn: Callable[[Scalar], Vector3],
     t_end: None | Array = None,
 ) -> Callable[[Scalar], Array]:
-    """Create a position interpolation function from simulation trajectory data.
+    """Create position interpolation function from trajectory data.
 
-    Constructs a cubic Hermite interpolation function for charge position using position
-    and velocity data from a time-stepped simulation. Outside the simulation time range,
-    returns the original position function or the final position.
+    Cubic Hermite interpolation ensuring C1 continuity. Outside simulation range,
+    returns original position function or final position.
 
-    Parameters
-    ----------
-    ts : Array
-        1D array of simulation time points, shape ``(n_steps,)``.
-    position_array : Array
-        2D array of position vectors at each time step, shape ``(n_steps, 3)``.
-    velocity_array : Array
-        2D array of velocity vectors at each time step, shape ``(n_steps, 3)``.
-    position_0_fn : Callable[[Scalar], Vector3]
-        Original position function used before simulation start time.
-    t_end : Array or None, optional
-        Optional end time for interpolation. If None, uses ``ts[-1]``.
+    Args:
+        ts (Array): Time points, shape ``(n_steps,)``.
+        position_array (Array): Positions at each time, shape ``(n_steps, 3)``.
+        velocity_array (Array): Velocities at each time, shape ``(n_steps, 3)``.
+        position_0_fn (Callable[[Scalar], Vector3]): Original position function before simulation start.
+        t_end (Array or None): End time for interpolation. Default: if ``None``, uses ``ts[-1]``.
 
-    Returns
-    -------
-    Callable[[Scalar], Array]
-        A callable that takes time t and returns the interpolated 3D position vector:
-
-        - For t <= ts[0]: returns position_0_fn(t)
-        - For t >= t_end: returns position_array[t_end_idx]
-        - Otherwise: returns cubic Hermite interpolation
-
-    Notes
-    -----
-    Uses cubic Hermite interpolation which ensures C1 continuity (continuous
-    position and velocity) across time step boundaries.
+    Returns:
+        Callable[[Scalar], Array]: Function returning position at time t.
+            For t <= ts[0], returns position_0_fn(t). For t >= t_end, returns final position.
+            Otherwise, cubic Hermite interpolation.
     """
     t_start = ts[0]
     t_end = ts[-1] if t_end is None else t_end
@@ -98,115 +77,62 @@ def interpolate_position(
 
 
 def position(t: ArrayLike, charge: Charge) -> Array:
-    r"""Compute the position of a charge at a given time.
+    r"""Compute charge position at time t.
 
-    Parameters
-    ----------
-    t : ArrayLike
-        Time value (scalar or array).
-    charge : Charge
-        Charge object with position_fn attribute.
+    Args:
+        t (ArrayLike): Time (scalar or array).
+        charge (Charge): Charge object.
 
-    Returns
-    -------
-    Array
-        3D position vector :math:`\mathbf{r}(t) = [x(t), y(t), z(t)]` as a JAX array.
+    Returns:
+        Array: Position :math:`\mathbf{r}(t) = [x, y, z]`.
     """
     return jnp.asarray(charge.position_fn(t), dtype=jnp.result_type(0.0))
 
 
 def velocity(t: ArrayLike, charge: Charge) -> Array:
-    r"""Compute the velocity of a charge at a given time via automatic differentiation.
+    r"""Compute charge velocity :math:`\mathbf{v}(t) = d\mathbf{r}/dt` via automatic differentiation.
 
-    Calculates :math:`\mathbf{v}(t) = d\mathbf{r}/dt` using JAX's automatic differentiation.
+    Args:
+        t (ArrayLike): Time (scalar or array).
+        charge (Charge): Charge object.
 
-    Parameters
-    ----------
-    t : ArrayLike
-        Time value (scalar or array).
-    charge : Charge
-        Charge object with position_fn attribute.
-
-    Returns
-    -------
-    Array
-        3D velocity vector :math:`\mathbf{v}(t) = [v_x(t), v_y(t), v_z(t)]` as a JAX array.
-
-    Notes
-    -----
-    Requires the position function to be differentiable. Uses JAX's jacobian
-    for automatic differentiation.
+    Returns:
+        Array: Velocity :math:`\mathbf{v}(t) = [v_x, v_y, v_z]`.
     """
     return jax.jacobian(position)(t, charge)
 
 
 def acceleration(t: ArrayLike, charge: Charge) -> Array:
-    r"""Compute the acceleration of a charge at a given time via automatic differentiation.
+    r"""Compute charge acceleration :math:`\mathbf{a}(t) = d^2\mathbf{r}/dt^2` via automatic differentiation.
 
-    Calculates :math:`\mathbf{a}(t) = d^2\mathbf{r}/dt^2` using JAX's automatic differentiation.
+    Args:
+        t (ArrayLike): Time (scalar or array).
+        charge (Charge): Charge object.
 
-    Parameters
-    ----------
-    t : ArrayLike
-        Time value (scalar or array).
-    charge : Charge
-        Charge object with position_fn attribute.
-
-    Returns
-    -------
-    Array
-        3D acceleration vector :math:`\mathbf{a}(t) = [a_x(t), a_y(t), a_z(t)]` as a JAX array.
-
-    Notes
-    -----
-    Requires the position function to be twice differentiable. Computed by
-    differentiating the velocity function.
+    Returns:
+        Array: Acceleration :math:`\mathbf{a}(t) = [a_x, a_y, a_z]`.
     """
     return jax.jacobian(velocity)(t, charge)
 
 
-def source_time(r: Array, t: Array, charge: Charge) -> Array:
-    r"""Compute the retarded time for electromagnetic field calculations.
+def emission_time(r: Array, t: Array, charge: Charge) -> Array:
+    r"""Compute emission time (retarded time) :math:`t_r` for a charge at observation point.
 
-    Solves the retarded time equation:
+    Solves :math:`t_r = t - \frac{1}{c}\,|\mathbf{r} - \mathbf{r}_s(t_r)|` using fixed-point iteration
+    followed by Newton refinement.
 
-    .. math::
+    Args:
+        r (Array): Observation point :math:`\mathbf{r} = [x, y, z]`.
+        t (Array): Observation time.
+        charge (Charge): Charge with position function and solver config.
 
-        t_{\text{ret}} = t - \frac{|\mathbf{r} - \mathbf{r}_{\text{src}}(t_{\text{ret}})|}{c}
+    Returns:
+        Array: :math:`t_r`.
 
-    This is the time at which a signal must have been emitted from the source charge to
-    reach the observation point :math:`\mathbf{r}` at time :math:`t`, accounting for
-    light-speed propagation.
-
-    The solution uses a two-stage approach:
-
-    1. Fixed-point iteration to get close to the solution
-    2. Newton's method refinement for high accuracy
-
-    Parameters
-    ----------
-    r : Array
-        3D observation point position vector :math:`\mathbf{r} = [x, y, z]`.
-    t : Array
-        Observation time :math:`t`.
-    charge : Charge
-        Charge object containing position function and solver parameters.
-
-    Returns
-    -------
-    Array
-        Retarded time :math:`t_{\text{ret}}` as a JAX scalar array.
-
-    Notes
-    -----
-    The solver parameters (rtol, atol, max_steps, throw) can be configured in
-    the Charge object to control convergence behavior and accuracy.
-
-    References
-    ----------
-    .. [1] Jackson, J. D. (1999). Classical Electrodynamics (3rd ed.). Wiley.
-           Section 14.1: Liénard-Wiechert Potentials.
+    Note:
+        Solver parameters (``rtol``, ``atol``, ``max_steps``, ``throw``) configured via ``charge.solver_config``.
     """
+    config = charge.solver_config
 
     def fn_fixed_point(tr, _):
         return t - jnp.linalg.norm(r - position(tr, charge)) / c
@@ -217,23 +143,23 @@ def source_time(r: Array, t: Array, charge: Charge) -> Array:
     t_init = t - jnp.linalg.norm(r - position(t, charge)) / c  # Initial guess
 
     # First use a fixed-point iteration to get close to solution
-    solver_fixed_point = optx.FixedPointIteration(rtol=charge.fixed_point_rtol, atol=charge.fixed_point_atol)
+    solver_fixed_point = optx.FixedPointIteration(rtol=config.fixed_point_rtol, atol=config.fixed_point_atol)
     result_fixed_point = optx.fixed_point(
         fn_fixed_point,
         solver_fixed_point,
         t_init,
-        max_steps=charge.fixed_point_max_steps,
-        throw=charge.fixed_point_throw,
+        max_steps=config.fixed_point_max_steps,
+        throw=config.fixed_point_throw,
     )
     t_fixed_point = result_fixed_point.value
 
     # Use Newton's method to refine the solution
-    solver_newton = optx.Newton(rtol=charge.root_find_rtol, atol=charge.root_find_atol)
+    solver_newton = optx.Newton(rtol=config.root_find_rtol, atol=config.root_find_atol)
     result = optx.root_find(
         fn_root_find,
         solver_newton,
         t_fixed_point,
-        max_steps=charge.root_find_max_steps,
-        throw=charge.root_find_throw,
+        max_steps=config.root_find_max_steps,
+        throw=config.root_find_throw,
     )
     return result.value

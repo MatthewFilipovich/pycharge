@@ -1,9 +1,4 @@
-"""Electromagnetic potentials and fields from moving point charges.
-
-This module implements the Liénard-Wiechert potentials and their derivatives to compute
-electromagnetic fields (E and B) from arbitrarily moving point charges. The calculations
-account for retardation effects and relativistic corrections.
-"""
+"""Liénard-Wiechert potentials and electromagnetic fields from moving point charges."""
 
 from typing import Callable, Iterable, NamedTuple
 
@@ -14,42 +9,21 @@ from jax.typing import ArrayLike
 from scipy.constants import c, epsilon_0, pi
 
 from pycharge.charge import Charge
-from pycharge.functional import acceleration, position, source_time, velocity
+from pycharge.functional import acceleration, emission_time, position, velocity
 
 
 class Quantities(NamedTuple):
-    r"""Container for electromagnetic quantities computed from moving charges.
+    r"""Electromagnetic quantities from moving charges.
 
-    This named tuple holds the scalar potential, vector potential, electric and magnetic
-    fields, along with decomposed field components that separate velocity-dependent and
-    acceleration-dependent contributions.
-
-    Attributes
-    ----------
-    scalar : Array
-        Scalar potential :math:`\phi` (Liénard-Wiechert potential), shape ``(...)``.
-    vector : Array
-        Vector potential :math:`\mathbf{A}`, shape ``(..., 3)``.
-    electric : Array
-        Total electric field :math:`\mathbf{E} = \mathbf{E}_1 + \mathbf{E}_2`, shape ``(..., 3)``.
-    magnetic : Array
-        Total magnetic field :math:`\mathbf{B} = \mathbf{B}_1 + \mathbf{B}_2`, shape ``(..., 3)``.
-    electric_term1 : Array
-        Velocity-dependent (Coulomb-like) electric field component :math:`\mathbf{E}_1`, shape ``(..., 3)``.
-    electric_term2 : Array
-        Acceleration-dependent (radiation) electric field component :math:`\mathbf{E}_2`, shape ``(..., 3)``.
-    magnetic_term1 : Array
-        Velocity-dependent magnetic field component :math:`\mathbf{B}_1 = \mathbf{n} \times \mathbf{E}_1 / c`, shape ``(..., 3)``.
-    magnetic_term2 : Array
-        Acceleration-dependent (radiation) magnetic field component :math:`\mathbf{B}_2 = \mathbf{n} \times \mathbf{E}_2 / c`, shape ``(..., 3)``.
-
-    Notes
-    -----
-    All fields are evaluated at the retarded time, accounting for the finite speed
-    of light propagation from the source charge to the observation point.
-
-    - :math:`\mathbf{E}_1` falls off as :math:`1/R^2` (near field)
-    - :math:`\mathbf{E}_2` falls off as :math:`1/R` (radiation field)
+    Attributes:
+        scalar (Array): Scalar potential :math:`\phi`, shape ``(...)``.
+        vector (Array): Vector potential :math:`\mathbf{A}`, shape ``(..., 3)``.
+        electric (Array): Electric field :math:`\mathbf{E} = \mathbf{E}_1 + \mathbf{E}_2`, shape ``(..., 3)``.
+        magnetic (Array): Magnetic field :math:`\mathbf{B} = \mathbf{B}_1 + \mathbf{B}_2`, shape ``(..., 3)``.
+        electric_term1 (Array): Velocity-dependent term :math:`\mathbf{E}_1 \propto 1/R^2`, shape ``(..., 3)``.
+        electric_term2 (Array): Acceleration-dependent term :math:`\mathbf{E}_2 \propto 1/R`, shape ``(..., 3)``.
+        magnetic_term1 (Array): Velocity-dependent :math:`\mathbf{B}_1`, shape ``(..., 3)``.
+        magnetic_term2 (Array): Acceleration-dependent :math:`\mathbf{B}_2`, shape ``(..., 3)``.
     """
 
     scalar: Array
@@ -66,13 +40,21 @@ class Quantities(NamedTuple):
 def potentials_and_fields(
     charges: Iterable[Charge],
 ) -> Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], Quantities]:
-    r"""Create a function to compute electromagnetic potentials and fields from moving charges.
+    r"""Create function to compute Liénard-Wiechert potentials and fields from moving charges.
 
-    Constructs a function that calculates the Liénard-Wiechert potentials and electromagnetic
-    fields (E and B) at specified spacetime points due to one or more moving point charges.
-    The implementation accounts for retardation effects and supports arbitrary charge motions.
+    Returns a function that calculates electromagnetic potentials and fields at spacetime points.
 
-    The electric and magnetic fields are computed using:
+    The Liénard-Wiechert potentials:
+
+    .. math::
+
+        \phi(\mathbf{r}, t) = \frac{q}{4\pi\varepsilon_0} \frac{1}{(1 - \boldsymbol{\beta}_s \cdot \mathbf{n}_s) R}
+
+    .. math::
+
+        \mathbf{A}(\mathbf{r}, t) = \frac{\boldsymbol{\beta}_s}{c} \phi(\mathbf{r}, t)
+
+    The electric and magnetic fields:
 
     .. math::
 
@@ -84,48 +66,19 @@ def potentials_and_fields(
 
     .. math::
 
-        \mathbf{B}(\mathbf{r}, t)
-        = \frac{\mathbf{n}_s(t_r)}{c} \times \mathbf{E}(\mathbf{r}, t)
+        \mathbf{B}(\mathbf{r}, t) = \frac{\mathbf{n}_s(t_r)}{c} \times \mathbf{E}(\mathbf{r}, t)
 
-    where all source quantities are evaluated at the retarded time :math:`t_r`. The first term in
-    the electric field expression is the velocity-dependent term (scaling as :math:`1/R^2`), and
-    the second term is the acceleration-dependent radiation term (scaling as :math:`1/R`). These
-    individual terms can be accessed via ``quantities.electric_term1`` and ``quantities.electric_term2``,
-    respectively. Similarly, the magnetic field terms are accessible via ``quantities.magnetic_term1``
-    and ``quantities.magnetic_term2``.
+    where all source quantities are at :math:`t_r`.
 
-    Parameters
-    ----------
-    charges : Charge or Iterable[Charge]
-        Single Charge object or iterable of Charge objects.
+    Args:
+        charges (Iterable[Charge]): Charge object(s) to compute fields from.
 
-    Returns
-    -------
-    Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], Quantities]
-        A function ``quantities_fn(x, y, z, t)`` that computes electromagnetic quantities.
-        The returned function takes:
+    Returns:
+        Callable[[ArrayLike, ArrayLike, ArrayLike, ArrayLike], Quantities]: Function ``(x, y, z, t)``
+            returning electromagnetic quantities at spacetime point.
 
-        - x, y, z : Spatial coordinates (scalars or arrays of the same shape)
-        - t : Time coordinate (scalar or array matching x, y, z shape)
-
-        And returns a Quantities namedtuple containing all electromagnetic fields.
-
-    Raises
-    ------
-    ValueError
-        If charges is empty or if x, y, z, t don't have matching shapes.
-
-    Notes
-    -----
-    - All calculations use the retarded time, accounting for light-speed propagation
-    - Supports vectorized evaluation over arbitrary arrays of points
-    - Uses JAX for automatic differentiation and JIT compilation
-    - The function is compatible with JAX transformations (jit, vmap, grad)
-
-    References
-    ----------
-    .. [1] Jackson, J. D. (1999). Classical Electrodynamics (3rd ed.). Wiley.
-    .. [2] Griffiths, D. J. (2017). Introduction to Electrodynamics (4th ed.). Cambridge.
+    Note:
+        Compatible with JAX transformations (jit, vmap, grad).
     """
     charges = [charges] if isinstance(charges, Charge) else list(charges)
 
@@ -152,9 +105,8 @@ def potentials_and_fields(
         )
 
     def calculate_total_sources(r: Array, t: Array) -> Quantities:
-        # Solve for retarded times for each charge
-        t_srcs = jnp.stack([source_time(r, t, charge) for charge in charges])
-        # Evaluate source properties at the retarded times
+        t_srcs = jnp.stack([emission_time(r, t, charge) for charge in charges])
+        # Evaluate source properties at the original emission times
         r_srcs = jnp.stack([position(tr, charge) for tr, charge in zip(t_srcs, charges)])
         v_srcs = jnp.stack([velocity(tr, charge) for tr, charge in zip(t_srcs, charges)])
         a_srcs = jnp.stack([acceleration(tr, charge) for tr, charge in zip(t_srcs, charges)])

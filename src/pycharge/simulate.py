@@ -1,9 +1,4 @@
-"""Time-stepping simulation of interacting charged particle systems.
-
-This module provides functions for simulating the dynamics of multiple interacting
-charged particles using ordinary differential equation (ODE) solvers with
-electromagnetic force coupling.
-"""
+"""Time-stepping simulation of interacting charged particle systems."""
 
 from dataclasses import replace
 from typing import Callable, Sequence
@@ -17,46 +12,22 @@ from pycharge.sources import Source
 
 
 def simulate(sources: Sequence[Source], ts: Array, print_every: int = 100) -> Callable[[], tuple[Array, ...]]:
-    """Create a simulation function for time-evolution of charged particle sources.
+    """Create simulation function for time-evolution of interacting charged particles.
 
-    Constructs a function that simulates the dynamics of multiple interacting charged
-    particle sources over specified time steps. Each source evolves according to its
-    ODE function while interacting electromagnetically with charges from other sources.
+    Simulates sources interacting electromagnetically via Lorentz force.
+    Uses RK4 time-stepping with trajectory interpolation for self-consistent fields.
 
-    The simulation uses RK4 (4th-order Runge-Kutta) time-stepping and maintains trajectory
-    data for position and velocity interpolation.
+    Args:
+        sources (Sequence[Source]): Sources to simulate.
+        ts (Array): Time points, shape ``(n_steps,)``.
+        print_every (int): Print progress every N steps. Set to ``0`` to disable. Default: ``100``.
 
-    Parameters
-    ----------
-    sources : Sequence[Source]
-        Sequence of Source objects to simulate.
-    ts : Array
-        1D array of time points at which to compute the state, shape ``(n_steps,)``.
-        Must be uniformly or non-uniformly spaced.
-    print_every : int, optional
-        Print progress every N time steps. Set to 0 or None to disable
-        progress printing. Default is 100.
+    Returns:
+        Callable[[], tuple[Array, ...]]: Function returning tuple of state arrays, one per source.
+            Each state array has shape ``(n_steps, n_charges, 2, 3)`` for ``[[r, v], ...]`` at each time.
 
-    Returns
-    -------
-    Callable[[], tuple[Array, ...]]
-        A callable ``simulate_fn()`` that when called, performs the simulation and returns
-        a tuple of state arrays, one per source. Each state array has shape
-        ``(n_steps, n_charges, 2, 3)`` containing ``[position, velocity]`` for each charge
-        at each time step.
-
-    Notes
-    -----
-    - Uses JAX's lax.fori_loop for efficient compilation
-    - Updates charge position functions at each step for self-consistent field calculations
-    - Compatible with JAX JIT compilation for performance
-    - Memory scales as O(n_steps * n_sources * n_charges * 6)
-
-    See Also
-    --------
-    Source : Container for charge system and ODE function
-    dipole_source : Factory function for dipole oscillators
-    free_particle_source : Factory function for free particles
+    Note:
+        Compatible with JAX JIT. Memory scales as ``O(n_steps * n_sources * n_charges)``.
     """
     dts = ts[1:] - ts[:-1]
 
@@ -126,25 +97,17 @@ def simulate(sources: Sequence[Source], ts: Array, print_every: int = 100) -> Ca
 
 
 def rk4_step(term, t, u, dt, other_charges):
-    """Perform a single RK4 (Runge-Kutta 4th order) time step.
+    """Perform single RK4 (4th-order Runge-Kutta) time step.
 
-    Parameters
-    ----------
-    term : Callable
-        ODE function with signature ``(t, u, other_charges) -> du/dt``.
-    t : float
-        Current time.
-    u : Array
-        Current state array, shape ``(n_charges, 2, 3)`` for ``[position, velocity]``.
-    dt : float
-        Time step size.
-    other_charges : list[Charge]
-        List of Charge objects from other sources for field calculation.
+    Args:
+        term (Callable): ODE function ``(t, u, other_charges) -> du/dt``.
+        t (float): Current time.
+        u (Array): Current state, shape ``(n_charges, 2, 3)`` for ``[[r, v], ...]``.
+        dt (float): Time step.
+        other_charges (list[Charge]): Charges from other sources.
 
-    Returns
-    -------
-    Array
-        Updated state ``u + dt * (weighted average of k1, k2, k3, k4)``.
+    Returns:
+        Array: Updated state ``u + dt * (k1 + 2*k2 + 2*k3 + k4) / 6``.
     """
     k1 = term(t, u, other_charges)
     k2 = term(t + dt / 2, u + dt / 2 * k1, other_charges)

@@ -202,10 +202,8 @@ plot_vector_components(vector_potential, title_prefix="Vector Potential", cbar_l
 # Electric field
 # --------------
 #
-# The electric field :math:`\mathbf{E} = -\nabla \phi - \partial \mathbf{A}/\partial t`
-# includes both near-field and radiation components. For an oscillating dipole,
-# the y-component dominates near the axis, while the x-component is strongest
-# perpendicular to it.
+# The electric field :math:`\mathbf{E} = -\nabla \phi - \partial \mathbf{A}/\partial t` can be decomposed into
+# x, y, and z components.
 
 plot_vector_components(electric_field, title_prefix="Electric Field", cbar_label_prefix="E")
 
