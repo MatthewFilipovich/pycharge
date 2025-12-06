@@ -34,8 +34,8 @@ origin0 = [0.0, 0.0, 0.0]  # Origin of first dipole
 origin1 = [0.0, 5e-9, 0.0]  # Origin of second dipole (5 nm apart)
 
 # Create two identical dipoles separated along the y-axis
-dipole0 = dipole_source(initial_moment0, q, omega_0, m, origin0)
-dipole1 = dipole_source(initial_moment1, q, omega_0, m, origin1)
+dipole0 = dipole_source(initial_moment0, omega_0, origin0, q, m)
+dipole1 = dipole_source(initial_moment1, omega_0, origin1, q, m)
 
 # Simulation time parameters
 num_steps = 10_000

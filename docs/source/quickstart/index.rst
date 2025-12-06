@@ -204,10 +204,10 @@ encapsulates the dipole's initial separation, physical parameters, and ODE.
 
    dipole = dipole_source(
        d_0=[0.0, 0.0, 1e-9],
-       q=e,
        omega_0=100e12 * 2 * jnp.pi,
-       m=m_e,
        origin=[0.0, 0.0, 0.0],
+       q=e,
+       m=m_e,
    )
 
 3. Configure time steps and run the simulation

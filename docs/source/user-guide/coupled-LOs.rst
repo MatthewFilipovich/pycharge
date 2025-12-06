@@ -92,13 +92,13 @@ Practical recipe:
    dipole1 = dipole_source(
        d_0=[0.0, 0.0, 1e-11],
        omega_0=omega_0,
-       origin=[0.0, 0.0, 0.0]
+       origin=[0.0, 0.0, 0.0],
    )
 
    dipole2 = dipole_source(
        d_0=[0.0, 0.0, 1e-11],
        omega_0=omega_0,
-       origin=[separation, 0.0, 0.0]
+       origin=[separation, 0.0, 0.0],
    )
 
    # Create and run the simulation for the coupled system

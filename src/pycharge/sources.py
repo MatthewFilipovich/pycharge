@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Callable, Sequence
 
 import jax.numpy as jnp
-from scipy.constants import c, epsilon_0
+from scipy.constants import c, e, epsilon_0, m_e
 
 from pycharge import potentials_and_fields
 from pycharge.charge import Charge
@@ -27,7 +27,7 @@ class Source:
     ode_func: Callable
 
 
-def dipole_source(d_0: Vector3, q: float, omega_0: float, m: float, origin: Vector3) -> Source:
+def dipole_source(d_0: Vector3, omega_0: float, origin: Vector3, q: float = e, m: float = m_e) -> Source:
     r"""Create harmonic dipole oscillator with radiation damping.
 
     Two charges :math:`\pm q` oscillate as damped harmonic dipole with radiation reaction.
@@ -41,10 +41,10 @@ def dipole_source(d_0: Vector3, q: float, omega_0: float, m: float, origin: Vect
 
     Args:
         d_0 (Vector3): Initial dipole separation :math:`\mathbf{d}_0` (m).
-        q (float): Charge magnitude (C) of each charge. Charges are :math:`+q` and :math:`-q`.
         omega_0 (float): Natural frequency (rad/s).
-        m (float): Mass (kg) of each charge. Effective (reduced) mass is :math:`m/2`.
         origin (Vector3): Center position (m).
+        q (float): Charge magnitude (C) of each charge. Charges are :math:`+q` and :math:`-q`. Default: ``e``.
+        m (float): Mass (kg) of each charge. Effective (reduced) mass is :math:`m/2`. Default: ``m_e``.
 
     Returns:
         Source: Source with two charges and dipole ODE.
@@ -81,15 +81,15 @@ def dipole_source(d_0: Vector3, q: float, omega_0: float, m: float, origin: Vect
     return Source(charges_0=(Charge(positions_0[0], -q), Charge(positions_0[1], q)), ode_func=dipole_ode_fn)
 
 
-def free_particle_source(position_0_fn: Callable[[Scalar], Vector3], q: float, m: float) -> Source:
+def free_particle_source(position_0_fn: Callable[[Scalar], Vector3], q: float = e, m: float = m_e) -> Source:
     r"""Create free charged particle subject to Lorentz force.
 
     Particle evolves according to :math:`m\frac{d\mathbf{v}}{dt} = q(\mathbf{E} + \mathbf{v} \times \mathbf{B})`.
 
     Args:
         position_0_fn (Callable[[Scalar], Vector3]): Initial position function :math:`\mathbf{r}_0(t)`.
-        q (float): Charge (C).
-        m (float): Mass (kg).
+        q (float): Charge (C). Default: ``e``.
+        m (float): Mass (kg). Default: ``m_e``.
 
     Returns:
         Source: Source with one charge and Lorentz force ODE.

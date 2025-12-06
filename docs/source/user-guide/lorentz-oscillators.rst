@@ -81,8 +81,9 @@ You can create a Lorentz Oscillator source using the :func:`~pycharge.dipole_sou
    # Create a dipole source with a natural frequency of 200*pi THz
    lorentz_oscillator = dipole_source(
        d_0=[0.0, 0.0, 1e-11],  # Initial displacement
-       q=e,
        omega_0=100e12 * 2 * 3.14159,
+       origin=[0.0, 0.0, 0.0],
+       q=e,
        m=m_e,
    )
 

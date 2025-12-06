@@ -9,7 +9,7 @@ from pycharge import dipole_source, free_particle_source, simulate
 def dipole1():
     """Defines a dipole source at the origin."""
     return dipole_source(
-        d_0=[0.0, 0.0, 1e-11], q=e, omega_0=100e12 * 2 * jnp.pi, m=m_e, origin=[0.0, 0.0, 0.0]
+        d_0=[0.0, 0.0, 1e-11], omega_0=100e12 * 2 * jnp.pi, origin=[0.0, 0.0, 0.0], q=e, m=m_e
     )
 
 
@@ -17,7 +17,7 @@ def dipole1():
 def dipole2():
     """Defines a dipole source offset on the x-axis."""
     return dipole_source(
-        d_0=[0.0, 0.0, 1e-11], q=e, omega_0=100e12 * 2 * jnp.pi, m=m_e, origin=[80e-9, 0.0, 0.0]
+        d_0=[0.0, 0.0, 1e-11], omega_0=100e12 * 2 * jnp.pi, origin=[80e-9, 0.0, 0.0], q=e, m=m_e
     )
 
 
