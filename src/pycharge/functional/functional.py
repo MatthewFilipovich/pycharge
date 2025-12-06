@@ -1,3 +1,10 @@
+"""Core functional utilities for charge dynamics and retarded time calculations.
+
+This module provides essential functions for computing charge positions, velocities,
+accelerations, and retarded times needed for electromagnetic field calculations using
+the Liénard-Wiechert potentials.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
@@ -21,6 +28,39 @@ def interpolate_position(
     position_0_fn: Callable[[Scalar], Vector3],
     t_end: None | Array = None,
 ) -> Callable[[Scalar], Array]:
+    """Create a position interpolation function from simulation trajectory data.
+
+    Constructs a cubic Hermite interpolation function for charge position using position
+    and velocity data from a time-stepped simulation. Outside the simulation time range,
+    returns the original position function or the final position.
+
+    Parameters
+    ----------
+    ts : Array
+        1D array of simulation time points, shape ``(n_steps,)``.
+    position_array : Array
+        2D array of position vectors at each time step, shape ``(n_steps, 3)``.
+    velocity_array : Array
+        2D array of velocity vectors at each time step, shape ``(n_steps, 3)``.
+    position_0_fn : Callable[[Scalar], Vector3]
+        Original position function used before simulation start time.
+    t_end : Array or None, optional
+        Optional end time for interpolation. If None, uses ``ts[-1]``.
+
+    Returns
+    -------
+    Callable[[Scalar], Array]
+        A callable that takes time t and returns the interpolated 3D position vector:
+
+        - For t <= ts[0]: returns position_0_fn(t)
+        - For t >= t_end: returns position_array[t_end_idx]
+        - Otherwise: returns cubic Hermite interpolation
+
+    Notes
+    -----
+    Uses cubic Hermite interpolation which ensures C1 continuity (continuous
+    position and velocity) across time step boundaries.
+    """
     t_start = ts[0]
     t_end = ts[-1] if t_end is None else t_end
     t_end_idx = jnp.searchsorted(ts, t_end, side="right") - 1
@@ -58,18 +98,116 @@ def interpolate_position(
 
 
 def position(t: ArrayLike, charge: Charge) -> Array:
+    r"""Compute the position of a charge at a given time.
+
+    Parameters
+    ----------
+    t : ArrayLike
+        Time value (scalar or array).
+    charge : Charge
+        Charge object with position_fn attribute.
+
+    Returns
+    -------
+    Array
+        3D position vector :math:`\mathbf{r}(t) = [x(t), y(t), z(t)]` as a JAX array.
+    """
     return jnp.asarray(charge.position_fn(t), dtype=jnp.result_type(0.0))
 
 
 def velocity(t: ArrayLike, charge: Charge) -> Array:
+    r"""Compute the velocity of a charge at a given time via automatic differentiation.
+
+    Calculates :math:`\mathbf{v}(t) = d\mathbf{r}/dt` using JAX's automatic differentiation.
+
+    Parameters
+    ----------
+    t : ArrayLike
+        Time value (scalar or array).
+    charge : Charge
+        Charge object with position_fn attribute.
+
+    Returns
+    -------
+    Array
+        3D velocity vector :math:`\mathbf{v}(t) = [v_x(t), v_y(t), v_z(t)]` as a JAX array.
+
+    Notes
+    -----
+    Requires the position function to be differentiable. Uses JAX's jacobian
+    for automatic differentiation.
+    """
     return jax.jacobian(position)(t, charge)
 
 
 def acceleration(t: ArrayLike, charge: Charge) -> Array:
+    r"""Compute the acceleration of a charge at a given time via automatic differentiation.
+
+    Calculates :math:`\mathbf{a}(t) = d^2\mathbf{r}/dt^2` using JAX's automatic differentiation.
+
+    Parameters
+    ----------
+    t : ArrayLike
+        Time value (scalar or array).
+    charge : Charge
+        Charge object with position_fn attribute.
+
+    Returns
+    -------
+    Array
+        3D acceleration vector :math:`\mathbf{a}(t) = [a_x(t), a_y(t), a_z(t)]` as a JAX array.
+
+    Notes
+    -----
+    Requires the position function to be twice differentiable. Computed by
+    differentiating the velocity function.
+    """
     return jax.jacobian(velocity)(t, charge)
 
 
 def source_time(r: Array, t: Array, charge: Charge) -> Array:
+    r"""Compute the retarded time for electromagnetic field calculations.
+
+    Solves the retarded time equation:
+
+    .. math::
+
+        t_{\text{ret}} = t - \frac{|\mathbf{r} - \mathbf{r}_{\text{src}}(t_{\text{ret}})|}{c}
+
+    This is the time at which a signal must have been emitted from the source charge to
+    reach the observation point :math:`\mathbf{r}` at time :math:`t`, accounting for
+    light-speed propagation.
+
+    The solution uses a two-stage approach:
+
+    1. Fixed-point iteration to get close to the solution
+    2. Newton's method refinement for high accuracy
+
+    Parameters
+    ----------
+    r : Array
+        3D observation point position vector :math:`\mathbf{r} = [x, y, z]`.
+    t : Array
+        Observation time :math:`t`.
+    charge : Charge
+        Charge object containing position function and solver parameters.
+
+    Returns
+    -------
+    Array
+        Retarded time :math:`t_{\text{ret}}` as a JAX scalar array.
+
+    Notes
+    -----
+    The solver parameters (rtol, atol, max_steps, throw) can be configured in
+    the Charge object to control convergence behavior and accuracy.
+
+    References
+    ----------
+    .. [1] Jackson, J. D. (1999). Classical Electrodynamics (3rd ed.). Wiley.
+           Section 14.1: Liénard-Wiechert Potentials.
+    """
+
     def fn_fixed_point(tr, _):
         return t - jnp.linalg.norm(r - position(tr, charge)) / c
 
