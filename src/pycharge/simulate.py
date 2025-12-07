@@ -12,10 +12,9 @@ from pycharge.sources import Source
 
 
 def simulate(sources: Sequence[Source], ts: Array, print_every: int = 100) -> Callable[[], tuple[Array, ...]]:
-    """Create simulation function for time-evolution of interacting charged particles.
+    """Create simulation function for time-evolution of interacting electromagnetic sources.
 
-    Simulates sources interacting electromagnetically via Lorentz force.
-    Uses RK4 time-stepping with trajectory interpolation for self-consistent fields.
+    Uses RK4 time-stepping with trajectory interpolation to solve the corresponding equations of motion.
 
     Args:
         sources (Sequence[Source]): Sources to simulate.
@@ -27,7 +26,7 @@ def simulate(sources: Sequence[Source], ts: Array, print_every: int = 100) -> Ca
             Each state array has shape ``(n_steps, n_charges, 2, 3)`` for ``[[r, v], ...]`` at each time.
 
     Note:
-        Compatible with JAX JIT. Memory scales as ``O(n_steps * n_sources * n_charges)``.
+        Compatible with :meth:`jax.jit`. Memory scales as ``O(n_steps * n_sources * n_charges)``.
     """
     dts = ts[1:] - ts[:-1]
 

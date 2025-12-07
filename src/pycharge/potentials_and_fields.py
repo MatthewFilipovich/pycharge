@@ -68,7 +68,7 @@ def potentials_and_fields(
 
         \mathbf{B}(\mathbf{r}, t) = \frac{\mathbf{n}_s(t_r)}{c} \times \mathbf{E}(\mathbf{r}, t)
 
-    where all source quantities are at :math:`t_r`.
+    where all source quantities are evaluated at :math:`t_r`.
 
     Args:
         charges (Iterable[Charge]): Charge object(s) to compute fields from.
@@ -78,7 +78,7 @@ def potentials_and_fields(
             returning electromagnetic quantities at spacetime point.
 
     Note:
-        Compatible with JAX transformations (jit, vmap, grad).
+        Compatible with JAX transformations (:meth:`jax.jit`, :meth:`jax.grad`).
     """
     charges = [charges] if isinstance(charges, Charge) else list(charges)
 

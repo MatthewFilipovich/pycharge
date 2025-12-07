@@ -18,9 +18,10 @@ class Source:
     Encapsulates charges and equations of motion for use with :func:`~pycharge.simulate`.
 
     Attributes:
-        charges_0 (Sequence[Charge]): Initial charges at t=0.
-        ode_func (Callable): ODE function ``(t, u, other_charges) -> du/dt`` where u has shape
-            ``(n_charges, 2, 3)`` for ``[[r0, v0], [r1, v1], ...]``.
+        charges_0 (Sequence[Charge]): Initial charges for time-dependent simulation.
+        ode_func (Callable): ODE function ``(t, u, other_charges) -> du/dt`` where ``u`` has shape
+            ``(n_charges, 2, 3)`` for
+            ``[[[x0, y0, z0], [vx0, vy0, vz0]], [[x1, y1, z1], [vx1, vy1, vz1]], ...]``.
     """
 
     charges_0: Sequence[Charge]
@@ -37,7 +38,7 @@ def dipole_source(d_0: Vector3, omega_0: float, origin: Vector3, q: float = e, m
 
         \ddot{\mathbf{d}} + \gamma_0 \dot{\mathbf{d}} + \omega_0^2 \mathbf{d} = \frac{2q}{m} \mathbf{E}_{\text{ext}}
 
-    where :math:`\gamma_0 = \frac{2q^2\omega_0^2}{3\pi\epsilon_0 m c^3}` is the damping coefficient.
+    where :math:`\gamma_0 = \frac{q^2\omega_0^2}{6\pi\epsilon_0 c^3 m}` is the damping coefficient.
 
     Args:
         d_0 (Vector3): Initial dipole separation :math:`\mathbf{d}_0` (m).
@@ -56,7 +57,7 @@ def dipole_source(d_0: Vector3, omega_0: float, origin: Vector3, q: float = e, m
     origin = jnp.asarray(origin)
 
     m_eff = m / 2
-    gamma_0 = 1 / (4 * jnp.pi * epsilon_0) * 2 * q**2 * omega_0**2 / (3 * m_eff * c**3)
+    gamma_0 = q**2 * omega_0**2 / (6 * jnp.pi * epsilon_0 * c**3 * m_eff)
     polarization_direction = jnp.abs(d_0 / jnp.linalg.norm(d_0))
 
     positions_0 = [lambda t: origin - d_0 / 2, lambda t: origin + d_0 / 2]
@@ -93,9 +94,6 @@ def free_particle_source(position_0_fn: Callable[[Scalar], Vector3], q: float = 
 
     Returns:
         Source: Source with one charge and Lorentz force ODE.
-
-    Note:
-        If no other charges present, particle moves with constant velocity.
     """
 
     def free_particle_ode_fn(t, u, other_charges):

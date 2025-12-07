@@ -23,10 +23,17 @@ def interpolate_position(
     position_0_fn: Callable[[Scalar], Vector3],
     t_end: None | Array = None,
 ) -> Callable[[Scalar], Array]:
-    """Create position interpolation function from trajectory data.
+    r"""Create position interpolation function from trajectory data.
 
-    Cubic Hermite interpolation ensuring C1 continuity. Outside simulation range,
-    returns original position function or final position.
+    Uses cubic Hermite interpolation for :math:`C^1` continuity (continuous position and velocity).
+    The interpolated position :math:`\mathbf{r}(t)` for :math:`t_i \leq t \leq t_{i+1}` is:
+
+    .. math::
+
+        \mathbf{r}(t) = a\tau^3 + b\tau^2 + c\tau + d
+
+    where :math:`\tau = (t - t_i)/(t_{i+1} - t_i)` and coefficients ensure matching positions
+    and velocities at interval endpoints.
 
     Args:
         ts (Array): Time points, shape ``(n_steps,)``.
@@ -37,8 +44,8 @@ def interpolate_position(
 
     Returns:
         Callable[[Scalar], Array]: Function returning position at time t.
-            For t <= ts[0], returns position_0_fn(t). For t >= t_end, returns final position.
-            Otherwise, cubic Hermite interpolation.
+            For :math:`t \leq t_0`, returns ``position_0_fn(t)``. For :math:`t \geq t_{\mathrm{end}}`,
+            returns final position. Otherwise, cubic Hermite interpolation.
     """
     t_start = ts[0]
     t_end = ts[-1] if t_end is None else t_end

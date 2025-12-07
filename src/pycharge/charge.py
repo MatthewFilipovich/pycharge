@@ -24,10 +24,6 @@ class SolverConfig:
         root_find_atol (float): Absolute tolerance (s). Default: ``1e-20``.
         root_find_max_steps (int): Maximum Newton iterations. Default: ``256``.
         root_find_throw (bool): Raise exception on failure. Default: ``True``.
-
-    Note:
-        Default tolerances (``1e-20`` s ≈ ``1e-12`` m) provide sub-atomic
-        precision. For faster performance, increase atol to ``1e-18`` or ``1e-16``.
     """
 
     fixed_point_rtol: float = 0.0

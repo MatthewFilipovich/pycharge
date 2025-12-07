@@ -1,4 +1,4 @@
-"""Core utilities for charge dynamics, trajectories, and electromagnetic calculations."""
+"""Core utility functions used in PyCharge."""
 
 from .functional import acceleration, emission_time, interpolate_position, position, velocity
 
