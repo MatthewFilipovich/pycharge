@@ -12,8 +12,8 @@ from jax.typing import ArrayLike
 from scipy.constants import c
 
 if TYPE_CHECKING:
-    from ..charge import Charge
-    from ..types import Scalar, Vector3
+    from pycharge.charge import Charge
+    from pycharge.types import Scalar, Vector3
 
 
 def interpolate_position(
