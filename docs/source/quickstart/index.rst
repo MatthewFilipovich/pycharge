@@ -14,8 +14,8 @@ PyCharge supports two primary workflows:
     Compute relativistically correct electromagnetic potentials and fields generated
     by point charges following predefined trajectories.
 
-2.  **Self-Consistent N-Body Electrodynamics**: Run time-domain simulations of multiple electromagnetic 
-    sources (e.g., dipoles) that interact through their self-generated fields.
+2.  **Self-Consistent N-Body Electrodynamics**: Run time-domain simulations of multiple
+    electromagnetic sources (e.g., dipoles) that interact through their self-generated fields.
 
 This guide walks through both workflows with short examples.
 
@@ -84,7 +84,9 @@ in the x-y plane.
 3.  Build the potentials and fields function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use :func:`~pycharge.potentials_and_fields` with a list of charges to build a function that computes the electromagnetic quantities (potentials and fields) at arbitrary observation points and times. Wrap the returned function with :func:`jax.jit` to improve performance.
+Use :func:`~pycharge.potentials_and_fields` with a list of charges to build a function that
+computes the electromagnetic quantities (potentials and fields) at arbitrary observation points
+and times. Wrap the returned function with :func:`jax.jit` to improve performance.
 
 .. plot::
     :context:
@@ -118,8 +120,8 @@ that grid.
 
 The returned ``quantities`` is a :class:`~typing.NamedTuple` containing
 arrays for scalar and vector potentials and the electric and magnetic
-fields. The example below plots the scalar potential and the magnitude of
-the electric field on the observation plane.
+fields. The example below plots the scalar potential and the magnitude of the electric field on
+the observation plane.
 
 .. plot::
     :context: close-figs
@@ -162,10 +164,10 @@ the electric field on the observation plane.
 Part 2: Self-Consistent N-Body Electrodynamics
 ----------------------------------------------
 
-PyCharge can simulate sources whose motion is governed by the electromagnetic
-fields they and other sources produce. :func:`~pycharge.simulate` accepts a
-sequence of :class:`~pycharge.Source` objects and a discrete time grid, then
-integrates the coupled ODEs to produce time-evolving source states.
+PyCharge can simulate sources whose motion is governed by the electromagnetic fields they and
+other sources produce. :func:`~pycharge.simulate` accepts a sequence of :class:`~pycharge.Source`
+objects and a discrete time grid, then integrates the coupled ODEs to produce time-evolving
+source states.
 
 1.  Import the required libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -185,8 +187,8 @@ integrates the coupled ODEs to produce time-evolving source states.
 2.  Create a dipole source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use :func:`~pycharge.dipole_source` to construct a :class:`~pycharge.Source`
-that encapsulates a dipole's initial separation, physical parameters, and ODE.
+Use :func:`~pycharge.dipole_source` to construct a :class:`~pycharge.Source` that encapsulates
+a dipole's initial separation, physical parameters, and ODE.
 
 .. plot::
     :context:
