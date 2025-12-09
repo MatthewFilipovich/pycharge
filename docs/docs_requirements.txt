@@ -1,8 +1,0 @@
-mkdocs-material
-python-markdown-math
-mkdocstrings-python
-numpy
-dill
-scipy
-tqdm
-matplotlib
