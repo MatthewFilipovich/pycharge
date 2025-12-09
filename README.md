@@ -19,7 +19,7 @@
 </div>
 
 <p align="center">
-  <img width="300" src="https://raw.githubusercontent.com/MatthewFilipovich/pycharge/master/docs/figs/oscillating_charge.gif">
+  <img width="300" src="https://raw.githubusercontent.com/MatthewFilipovich/pycharge/main/docs/source/_static/oscillating_charge.gif">
 </p>
 
 
