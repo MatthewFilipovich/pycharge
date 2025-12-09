@@ -1,5 +1,6 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/MatthewFilipovich/pycharge/refs/heads/v2/docs/source/_static/pycharge_logo.png" width="700px">
+  <img src="https://raw.githubusercontent.com/MatthewFilipovich/pycharge/main/docs/source/_static/pycharge_logo.png" width="700px">
+
 </p>
 
 <p align="center">
