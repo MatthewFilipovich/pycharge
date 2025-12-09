@@ -20,10 +20,10 @@ class Quantities(NamedTuple):
         vector (Array): Vector potential :math:`\mathbf{A}`, shape ``(..., 3)``.
         electric (Array): Electric field :math:`\mathbf{E} = \mathbf{E}_1 + \mathbf{E}_2`, shape ``(..., 3)``.
         magnetic (Array): Magnetic field :math:`\mathbf{B} = \mathbf{B}_1 + \mathbf{B}_2`, shape ``(..., 3)``.
-        electric_term1 (Array): Velocity-dependent term :math:`\mathbf{E}_1 \propto 1/R^2`, shape ``(..., 3)``.
-        electric_term2 (Array): Acceleration-dependent term :math:`\mathbf{E}_2 \propto 1/R`, shape ``(..., 3)``.
-        magnetic_term1 (Array): Velocity-dependent :math:`\mathbf{B}_1`, shape ``(..., 3)``.
-        magnetic_term2 (Array): Acceleration-dependent :math:`\mathbf{B}_2`, shape ``(..., 3)``.
+        electric_term1 (Array): E-field Velocity term :math:`\mathbf{E}_1`, shape ``(..., 3)``.
+        electric_term2 (Array): E-field Acceleration term :math:`\mathbf{E}_2`, shape ``(..., 3)``.
+        magnetic_term1 (Array): B-field Velocity term :math:`\mathbf{B}_1`, shape ``(..., 3)``.
+        magnetic_term2 (Array): B-field Acceleration term :math:`\mathbf{B}_2`, shape ``(..., 3)``.
 
     """
 
@@ -49,7 +49,8 @@ def potentials_and_fields(
 
     .. math::
 
-        \varphi(\mathbf{r}, t) = \left[\frac{q}{4\pi\varepsilon_0} \frac{1}{(1 - \boldsymbol{\beta}_s \cdot \mathbf{n}_s) R}\right]_{t_r},
+        \varphi(\mathbf{r}, t) = \left[\frac{q}{4\pi\varepsilon_0} \frac{1}{(1 - \boldsymbol{\beta}_s \cdot
+        \mathbf{n}_s) R}\right]_{t_r},
 
     .. math::
 
@@ -61,8 +62,11 @@ def potentials_and_fields(
 
         \mathbf{E}(\mathbf{r}, t)
         = \frac{q}{4\pi\varepsilon_0} \left[
-          \frac{\mathbf{n}_s - \boldsymbol{\beta}_s}{\gamma^{2}(1-\boldsymbol{\beta}_s \cdot \mathbf{n}_s)^{3}\,R^{2}} \;+\;
-          \frac{\mathbf{n}_s \times \bigl\{(\mathbf{n}_s - \boldsymbol{\beta}_s) \times \dot{\boldsymbol{\beta}}_s\bigr\}}{c\,(1-\boldsymbol{\beta}_s \cdot \mathbf{n}_s)^{3}\,R}
+          \frac{\mathbf{n}_s - \boldsymbol{\beta}_s}{\gamma^{2}(1-\boldsymbol{\beta}_s \cdot
+          \mathbf{n}_s)^{3}\,R^{2}}
+          \;+\;
+          \frac{\mathbf{n}_s \times \bigl\{(\mathbf{n}_s - \boldsymbol{\beta}_s) \times
+          \dot{\boldsymbol{\beta}}_s\bigr\}}{c\,(1-\boldsymbol{\beta}_s \cdot \mathbf{n}_s)^{3}\,R}
         \right]_{t_r},
 
     .. math::

@@ -37,7 +37,8 @@ def dipole_source(d_0: Vector3, omega_0: float, origin: Vector3, q: float = e, m
 
     .. math::
 
-        \ddot{\mathbf{d}} + \gamma_0 \dot{\mathbf{d}} + \omega_0^2 \mathbf{d} = \frac{q^2}{m} \mathbf{E}_{\text{ext}}
+        \ddot{\mathbf{d}} + \gamma_0 \dot{\mathbf{d}} + \omega_0^2 \mathbf{d} = \frac{q^2}{m}
+        \mathbf{E}_{\text{ext}}
 
     where :math:`\gamma_0 = \frac{q^2\omega_0^2}{6\pi\epsilon_0 c^3 m}` is the damping coefficient.
 
@@ -87,7 +88,8 @@ def dipole_source(d_0: Vector3, omega_0: float, origin: Vector3, q: float = e, m
 def free_particle_source(position_0_fn: Callable[[Scalar], Vector3], q: float = e, m: float = m_e) -> Source:
     r"""Create free charged particle subject to Lorentz force.
 
-    Particle evolves according to :math:`m\frac{d\mathbf{v}}{dt} = q(\mathbf{E} + \mathbf{v} \times \mathbf{B})`.
+    Particle evolves according to :math:`m\frac{d\mathbf{v}}{dt} = q(\mathbf{E} + \mathbf{v} \times
+    \mathbf{B})`.
 
     Args:
         position_0_fn (Callable[[Scalar], Vector3]): Initial position function :math:`\mathbf{r}_0(t)`.
