@@ -27,6 +27,7 @@ def simulate(sources: Sequence[Source], ts: Array, print_every: int = 100) -> Ca
 
     Note:
         Compatible with :meth:`jax.jit`. Memory scales as ``O(n_steps * n_sources * n_charges)``.
+
     """
     dts = ts[1:] - ts[:-1]
 
@@ -107,6 +108,7 @@ def rk4_step(term, t, u, dt, other_charges):
 
     Returns:
         Array: Updated state ``u + dt * (k1 + 2*k2 + 2*k3 + k4) / 6``.
+
     """
     k1 = term(t, u, other_charges)
     k2 = term(t + dt / 2, u + dt / 2 * k1, other_charges)

@@ -46,6 +46,7 @@ def interpolate_position(
         Callable[[Scalar], Array]: Function returning position at time t.
             For :math:`t \leq t_0`, returns ``position_0_fn(t)``. For :math:`t \geq t_{\mathrm{end}}`,
             returns final position. Otherwise, cubic Hermite interpolation.
+
     """
     t_start = ts[0]
     t_end = ts[-1] if t_end is None else t_end
@@ -92,6 +93,7 @@ def position(t: ArrayLike, charge: Charge) -> Array:
 
     Returns:
         Array: Position :math:`\mathbf{r}(t) = [x, y, z]`.
+
     """
     return jnp.asarray(charge.position_fn(t), dtype=jnp.result_type(0.0))
 
@@ -105,6 +107,7 @@ def velocity(t: ArrayLike, charge: Charge) -> Array:
 
     Returns:
         Array: Velocity :math:`\mathbf{v}(t) = [v_x, v_y, v_z]`.
+
     """
     return jax.jacobian(position)(t, charge)
 
@@ -118,6 +121,7 @@ def acceleration(t: ArrayLike, charge: Charge) -> Array:
 
     Returns:
         Array: Acceleration :math:`\mathbf{a}(t) = [a_x, a_y, a_z]`.
+
     """
     return jax.jacobian(velocity)(t, charge)
 
@@ -138,6 +142,7 @@ def emission_time(r: Array, t: Array, charge: Charge) -> Array:
 
     Note:
         Solver parameters (``rtol``, ``atol``, ``max_steps``, ``throw``) configured via ``charge.solver_config``.
+
     """
     config = charge.solver_config
 

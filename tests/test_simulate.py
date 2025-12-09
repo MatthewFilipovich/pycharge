@@ -7,7 +7,7 @@ from pycharge import dipole_source, free_particle_source, simulate
 
 @pytest.fixture
 def dipole1():
-    """Defines a dipole source at the origin."""
+    """Define a dipole source at the origin."""
     return dipole_source(
         d_0=[0.0, 0.0, 1e-11], omega_0=100e12 * 2 * jnp.pi, origin=[0.0, 0.0, 0.0], q=e, m=m_e
     )
@@ -15,7 +15,7 @@ def dipole1():
 
 @pytest.fixture
 def dipole2():
-    """Defines a dipole source offset on the x-axis."""
+    """Define a dipole source offset on the x-axis."""
     return dipole_source(
         d_0=[0.0, 0.0, 1e-11], omega_0=100e12 * 2 * jnp.pi, origin=[80e-9, 0.0, 0.0], q=e, m=m_e
     )
@@ -23,13 +23,13 @@ def dipole2():
 
 @pytest.fixture
 def free_particle1():
-    """Defines a free particle source with positive charge."""
+    """Define a free particle source with positive charge."""
     return free_particle_source(position_0_fn=lambda t: [1e-9, 0.0, 0.0], q=e, m=m_e)
 
 
 @pytest.fixture
 def free_particle2():
-    """Defines a free particle source with negative charge."""
+    """Define a free particle source with negative charge."""
     return free_particle_source(position_0_fn=lambda t: [-1e-9, 0.0, 0.0], q=-e, m=m_e)
 
 

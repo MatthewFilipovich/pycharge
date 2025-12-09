@@ -24,6 +24,7 @@ class SolverConfig:
         root_find_atol (float): Absolute tolerance for Newton's method (s). Default: ``1e-20``.
         root_find_max_steps (int): Maximum iterations for Newton's method. Default: ``256``.
         root_find_throw (bool): Raise exception on failure for Newton's method. Default: ``True``.
+
     """
 
     fixed_point_rtol: float = 0.0
@@ -50,6 +51,7 @@ class Charge:
     Note:
         Velocity :math:`\mathbf{v} = d\mathbf{r}/dt` and acceleration :math:`\mathbf{a} = d^2\mathbf{r}/dt^2`
         computed via JAX autodiff for Liénard-Wiechert calculations.
+
     """
 
     position_fn: Callable[[Scalar], Vector3]

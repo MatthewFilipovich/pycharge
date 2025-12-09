@@ -22,6 +22,7 @@ class Source:
         ode_func (Callable): ODE function ``(t, u, other_charges) -> du/dt`` where ``u`` has shape
             ``(n_charges, 2, 3)`` for
             ``[[[x0, y0, z0], [vx0, vy0, vz0]], [[x1, y1, z1], [vx1, vy1, vz1]], ...]``.
+
     """
 
     charges_0: Sequence[Charge]
@@ -52,6 +53,7 @@ def dipole_source(d_0: Vector3, omega_0: float, origin: Vector3, q: float = e, m
 
     Note:
         Dipole responds only to electric field along polarization axis.
+
     """
     d_0 = jnp.asarray(d_0)
     origin = jnp.asarray(origin)
@@ -94,6 +96,7 @@ def free_particle_source(position_0_fn: Callable[[Scalar], Vector3], q: float = 
 
     Returns:
         Source: Source with one charge and Lorentz force ODE.
+
     """
 
     def free_particle_ode_fn(t, u, other_charges):

@@ -24,6 +24,7 @@ class Quantities(NamedTuple):
         electric_term2 (Array): Acceleration-dependent term :math:`\mathbf{E}_2 \propto 1/R`, shape ``(..., 3)``.
         magnetic_term1 (Array): Velocity-dependent :math:`\mathbf{B}_1`, shape ``(..., 3)``.
         magnetic_term2 (Array): Acceleration-dependent :math:`\mathbf{B}_2`, shape ``(..., 3)``.
+
     """
 
     scalar: Array
@@ -78,6 +79,7 @@ def potentials_and_fields(
 
     Note:
         Compatible with JAX transformations (:meth:`jax.jit`, :meth:`jax.grad`).
+
     """
     charges = [charges] if isinstance(charges, Charge) else list(charges)
 
