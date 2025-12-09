@@ -54,6 +54,7 @@ def potentials_and_fields(
     .. math::
 
         \mathbf{A}(\mathbf{r}, t) = \frac{\boldsymbol{\beta}_s(t_r)}{c} \varphi(\mathbf{r}, t).
+
     The electric and magnetic fields:
 
     .. math::
