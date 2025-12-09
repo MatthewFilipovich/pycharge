@@ -21,7 +21,7 @@ class SolverConfig:
         fixed_point_max_steps (int): Maximum iterations for fixed-point iteration. Default: ``256``.
         fixed_point_throw (bool): Raise exception on failure for fixed-point iteration. Default: ``False``.
         root_find_rtol (float): Relative tolerance for Newton's method. Default: ``0.0``.
-        root_find_atol (float): Absolute tolerance for Newton's method (s). Default: ``1e-20``.
+        root_find_atol (float): Absolute tolerance for Newton's method. Default: ``1e-20``.
         root_find_max_steps (int): Maximum iterations for Newton's method. Default: ``256``.
         root_find_throw (bool): Raise exception on failure for Newton's method. Default: ``True``.
 

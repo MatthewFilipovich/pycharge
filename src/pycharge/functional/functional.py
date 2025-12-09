@@ -134,7 +134,7 @@ def emission_time(r: Array, t: Array, charge: Charge) -> Array:
 
     Args:
         r (Array): Observation point :math:`\mathbf{r} = [x, y, z]`.
-        t (Array): Observation time.
+        t (Array): Observation time :math:`t`.
         charge (Charge): Charge with position function and solver config.
 
     Returns:
