@@ -1,7 +1,7 @@
 r"""Free Particle and Dipole Interaction
 =======================================
 
-Demonstrates a free charged particle responding to an oscillating dipole field.
+This example demonstrates a free charged particle responding to an oscillating dipole field.
 The dipole (charges at :math:`z = \pm 0.5` nm) starts oscillating at :math:`t=0`.
 The particle, located 1500 nm away, experiences:
 

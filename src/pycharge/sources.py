@@ -1,4 +1,4 @@
-"""Physical source models for charged particle systems."""
+"""Defines electromagnetic sources used in simulations."""
 
 from dataclasses import dataclass
 from typing import Callable, Sequence
@@ -32,11 +32,11 @@ def dipole_source(d_0: Vector3, omega_0: float, origin: Vector3, q: float = e, m
     r"""Create harmonic dipole oscillator with radiation damping.
 
     Two charges :math:`\pm q` oscillate as damped harmonic dipole with radiation reaction.
-    Equation of motion for dipole moment :math:`\mathbf{d} = \mathbf{r}_+ - \mathbf{r}_-`:
+    Equation of motion for dipole moment :math:`\mathbf{d} = q(\mathbf{r}_+ - \mathbf{r}_-)`:
 
     .. math::
 
-        \ddot{\mathbf{d}} + \gamma_0 \dot{\mathbf{d}} + \omega_0^2 \mathbf{d} = \frac{2q}{m} \mathbf{E}_{\text{ext}}
+        \ddot{\mathbf{d}} + \gamma_0 \dot{\mathbf{d}} + \omega_0^2 \mathbf{d} = \frac{q^2}{m} \mathbf{E}_{\text{ext}}
 
     where :math:`\gamma_0 = \frac{q^2\omega_0^2}{6\pi\epsilon_0 c^3 m}` is the damping coefficient.
 
@@ -51,7 +51,7 @@ def dipole_source(d_0: Vector3, omega_0: float, origin: Vector3, q: float = e, m
         Source: Source with two charges and dipole ODE.
 
     Note:
-        Dipole responds only to field along polarization axis.
+        Dipole responds only to electric field along polarization axis.
     """
     d_0 = jnp.asarray(d_0)
     origin = jnp.asarray(origin)

@@ -123,10 +123,10 @@ def acceleration(t: ArrayLike, charge: Charge) -> Array:
 
 
 def emission_time(r: Array, t: Array, charge: Charge) -> Array:
-    r"""Compute emission time (retarded time) :math:`t_r` for a charge at observation point.
+    r"""Compute emission time (retarded time) :math:`t_r` for a charge at observation point :math:`(\mathbf{r}, t)`.
 
     Solves :math:`t_r = t - \frac{1}{c}\,|\mathbf{r} - \mathbf{r}_s(t_r)|` using fixed-point iteration
-    followed by Newton refinement.
+    followed by Newton's method.
 
     Args:
         r (Array): Observation point :math:`\mathbf{r} = [x, y, z]`.

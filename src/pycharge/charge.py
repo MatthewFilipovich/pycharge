@@ -12,18 +12,18 @@ from pycharge.types import Scalar, Vector3
 class SolverConfig:
     r"""Numerical solver configuration stored in :class:`~pycharge.charge.Charge`.
 
-    Parameters for the two-stage solver in :func:`~pycharge.functional.emission_time`:
-    fixed-point iteration followed by Newton refinement.
+    Parameters for the two-stage solver in :func:`~pycharge.functional.emission_time`, which uses
+    fixed-point iteration followed by Newton's method.
 
     Attributes:
         fixed_point_rtol (float): Relative tolerance for fixed-point iteration. Default: ``0.0``.
-        fixed_point_atol (float): Absolute tolerance (s). Default: ``1e-20``.
-        fixed_point_max_steps (int): Maximum iterations. Default: ``256``.
-        fixed_point_throw (bool): Raise exception on failure. Default: ``False``.
-        root_find_rtol (float): Relative tolerance for Newton refinement. Default: ``0.0``.
-        root_find_atol (float): Absolute tolerance (s). Default: ``1e-20``.
-        root_find_max_steps (int): Maximum Newton iterations. Default: ``256``.
-        root_find_throw (bool): Raise exception on failure. Default: ``True``.
+        fixed_point_atol (float): Absolute tolerance for fixed-point iteration. Default: ``1e-20``.
+        fixed_point_max_steps (int): Maximum iterations for fixed-point iteration. Default: ``256``.
+        fixed_point_throw (bool): Raise exception on failure for fixed-point iteration. Default: ``False``.
+        root_find_rtol (float): Relative tolerance for Newton's method. Default: ``0.0``.
+        root_find_atol (float): Absolute tolerance for Newton's method (s). Default: ``1e-20``.
+        root_find_max_steps (int): Maximum iterations for Newton's method. Default: ``256``.
+        root_find_throw (bool): Raise exception on failure for Newton's method. Default: ``True``.
     """
 
     fixed_point_rtol: float = 0.0

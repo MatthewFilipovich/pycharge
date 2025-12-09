@@ -48,12 +48,11 @@ def potentials_and_fields(
 
     .. math::
 
-        \phi(\mathbf{r}, t) = \frac{q}{4\pi\varepsilon_0} \frac{1}{(1 - \boldsymbol{\beta}_s \cdot \mathbf{n}_s) R}
+        \varphi(\mathbf{r}, t) = \left[\frac{q}{4\pi\varepsilon_0} \frac{1}{(1 - \boldsymbol{\beta}_s \cdot \mathbf{n}_s) R}\right]_{t_r},
 
     .. math::
 
-        \mathbf{A}(\mathbf{r}, t) = \frac{\boldsymbol{\beta}_s}{c} \phi(\mathbf{r}, t)
-
+        \mathbf{A}(\mathbf{r}, t) = \frac{\boldsymbol{\beta}_s(t_r)}{c} \varphi(\mathbf{r}, t).
     The electric and magnetic fields:
 
     .. math::
@@ -62,11 +61,11 @@ def potentials_and_fields(
         = \frac{q}{4\pi\varepsilon_0} \left[
           \frac{\mathbf{n}_s - \boldsymbol{\beta}_s}{\gamma^{2}(1-\boldsymbol{\beta}_s \cdot \mathbf{n}_s)^{3}\,R^{2}} \;+\;
           \frac{\mathbf{n}_s \times \bigl\{(\mathbf{n}_s - \boldsymbol{\beta}_s) \times \dot{\boldsymbol{\beta}}_s\bigr\}}{c\,(1-\boldsymbol{\beta}_s \cdot \mathbf{n}_s)^{3}\,R}
-        \right]_{t_r}
+        \right]_{t_r},
 
     .. math::
 
-        \mathbf{B}(\mathbf{r}, t) = \frac{\mathbf{n}_s(t_r)}{c} \times \mathbf{E}(\mathbf{r}, t)
+        \mathbf{B}(\mathbf{r}, t) = \frac{\mathbf{n}_s(t_r)}{c} \times \mathbf{E}(\mathbf{r}, t),
 
     where all source quantities are evaluated at :math:`t_r`.
 
@@ -107,9 +106,9 @@ def potentials_and_fields(
     def calculate_total_sources(r: Array, t: Array) -> Quantities:
         t_srcs = jnp.stack([emission_time(r, t, charge) for charge in charges])
         # Evaluate source properties at the original emission times
-        r_srcs = jnp.stack([position(tr, charge) for tr, charge in zip(t_srcs, charges)])
-        v_srcs = jnp.stack([velocity(tr, charge) for tr, charge in zip(t_srcs, charges)])
-        a_srcs = jnp.stack([acceleration(tr, charge) for tr, charge in zip(t_srcs, charges)])
+        r_srcs = jnp.stack([position(t_src, charge) for t_src, charge in zip(t_srcs, charges)])
+        v_srcs = jnp.stack([velocity(t_src, charge) for t_src, charge in zip(t_srcs, charges)])
+        a_srcs = jnp.stack([acceleration(t_src, charge) for t_src, charge in zip(t_srcs, charges)])
 
         # Compute individual contributions
         calculate_individual_source_vmap = jax.vmap(calculate_individual_source, in_axes=(0, 0, 0, 0, None))

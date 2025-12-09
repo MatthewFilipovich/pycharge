@@ -16,21 +16,20 @@ It is well known that an atom's surrounding environment modifies its radiative p
 In the classical model, the modification of the spontaneous emission (SE) rate arises from scattering of the atomic field (as the Lorentz oscillator is driven by the electric field at its origin position),  
 while in QED theory, the SE rate is stimulated by vacuum field fluctuations or radiation reaction, depending in part on the ordering of the quantum field operators.  
 
-In the **weak coupling regime**—where the atom–field coupling constant is much less than the photon decay rate inside the cavity—the interactions can be treated perturbatively,  
+In the weak coupling regime, where the atom-field coupling constant is much less than the photon decay rate inside the cavity, the interactions can be treated perturbatively,  
 so QED and classical theory yield the same results for the modification of the SE rate (except when the surrounding medium exhibits gain).  
-The modification of radiative properties for two coupled LOs in close vicinity can be obtained by invoking QED theory and using the **dyadic Green's function** for a dipole.
+The modification of radiative properties for two coupled LOs in close vicinity can be obtained by invoking QED theory and using the dyadic Green's function for a dipole.
 
-----
 
 Superradiant and Subradiant States
 ----------------------------------
 
 The classical analogs of the *superradiant* and *subradiant* states of two coupled two-level systems (TLSs),  
-where the dipoles are quantized, occur when they are polarized along the same axis and begin either **in phase**  
-(dipole moments aligned in the same direction) or **out of phase** (dipole moments opposite in direction), respectively.
+where the dipoles are quantized, occur when they are polarized along the same axis and begin either in phase  
+(dipole moments aligned in the same direction) or out of phase (dipole moments opposite in direction), respectively.
 
-**PyCharge** can calculate the frequency shift :math:`\delta_{12}` and SE rate :math:`\gamma^{\pm}` of two coupled LOs in either *collective state*  
-by curve fitting the discretized kinetic energy (KE) values—computed at each time step—to the expected harmonic form:
+PyCharge can calculate the frequency shift :math:`\delta_{12}` and SE rate :math:`\gamma^{\pm}` of two coupled LOs in either *collective state*  
+by curve fitting the discretized kinetic energy (KE) values, computed at each time step, to the expected harmonic form:
 
 .. math::
    :label: eq:KE
@@ -41,7 +40,7 @@ where :math:`A` and :math:`\phi` are constants determined by the initial simulat
 The fit should be performed using KE values after a sufficient number of time steps have elapsed,  
 allowing scattered fields to propagate back to the LO's origin position.  
 
-When the two coupled LOs are in the **superradiant** or **subradiant** states,  
+When the two coupled LOs are in the superradiant or subradiant states,  
 the populations of their excited states and their total energies :math:`\mathcal{E}` decay exponentially with rates :math:`\gamma^{+}` or :math:`\gamma^{-}`, respectively.
 
 ----
@@ -49,7 +48,7 @@ the populations of their excited states and their total energies :math:`\mathcal
 Radiated Power and Energy Exchange
 ----------------------------------
 
-The total electromagnetic power radiated by an accelerating point charge in a vacuum (at non-relativistic speeds) is given by the **Larmor formula**:
+The total electromagnetic power radiated by an accelerating point charge in a vacuum (at non-relativistic speeds) is given by the Larmor formula:
 
 .. math::
    :label: eq:Larmor
@@ -57,8 +56,8 @@ The total electromagnetic power radiated by an accelerating point charge in a va
    P(t) = \frac{q^2 a^2(t)}{6 \pi \epsilon_0 c^3}
 
 The power radiated by a dipole can be calculated using the same expression by replacing :math:`q^2 a^2` with :math:`|\mathbf{\ddot d}|^2`.  
-Assuming that the dipoles begin oscillating at :math:`t = 0`, the **radiated energy** at time :math:`t'` is obtained by integrating the radiated power from :math:`t = 0` to :math:`t = t'` —  
-which can be approximated in *PyCharge* using discrete integration.
+Assuming that the dipoles begin oscillating at :math:`t = 0`, the radiated energy at time :math:`t'` is obtained by integrating the radiated power from :math:`t = 0` to :math:`t = t'`,
+which can be approximated in PyCharge using discrete integration.
 
 If two or more dipoles interact within a system, each dipole may *absorb* an amount of energy :math:`W_\mathrm{abs}` radiated from the others.  
 The total (constant) energy of a system containing :math:`N` dipoles is the sum of all energy gains and losses:
@@ -76,38 +75,14 @@ where :math:`\mathcal{E}_i` is the total energy (sum of kinetic and potential en
 Simulating Coupled Dipoles in PyCharge
 --------------------------------------
 
-Simulating coupled systems in PyCharge is straightforward. The interaction between sources is handled automatically by the simulation engine. When the :func:`~pycharge.simulate` function calculates the driving field for each dipole at each time step, that field is the superposition of the fields generated by **all other sources** in the system.
+Simulating coupled systems in PyCharge is straightforward. The interaction between sources is handled 
+automatically by the simulation engine. When the :func:`~pycharge.simulate` function calculates the driving 
+field for each dipole at each time step, that field is the superposition of the fields generated by all other 
+sources in the system.
 
-Practical recipe:
+The resulting ``coupled_states`` output contains the full trajectory of both dipoles, which can then be used
+for further analysis. Although PyCharge calculates the system's dynamics directly, extracting quantitative
+parameters, such as the modified decay rates :math:`\gamma^{\pm}` or the frequency shift :math:`\delta_{12}`,
+requires additional post-processing.
 
-.. code-block:: python
-
-   import jax
-   from pycharge import dipole_source, simulate
-
-   # Define two identical dipoles separated by a distance `separation`
-   separation = 80e-9
-   omega_0 = 100e12 * 2 * 3.14159
-
-   dipole1 = dipole_source(
-       d_0=[0.0, 0.0, 1e-11],
-       omega_0=omega_0,
-       origin=[0.0, 0.0, 0.0],
-   )
-
-   dipole2 = dipole_source(
-       d_0=[0.0, 0.0, 1e-11],
-       omega_0=omega_0,
-       origin=[separation, 0.0, 0.0],
-   )
-
-   # Create and run the simulation for the coupled system
-   ts = jnp.linspace(0.0, 4e-14, 40_000)
-   sim_fn = jax.jit(simulate([dipole1, dipole2], ts))
-   coupled_states = sim_fn()
-
-The ``coupled_states`` output will contain the full trajectory information for both dipoles, which can then be used for analysis.
-
-.. note::
-   
-   While PyCharge computes the dynamics of the system, extracting quantitative parameters like the modified decay rate :math:`\gamma^{\pm}` and frequency shift :math:`\delta_{12}` requires post-processing.
+A complete simulation example is provided in :doc:`/examples/simulate_coupled_dipoles`.

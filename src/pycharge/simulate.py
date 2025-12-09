@@ -1,4 +1,4 @@
-"""Time-stepping simulation of interacting charged particle systems."""
+"""Time-stepping simulation of interacting electromagnetic sources."""
 
 from dataclasses import replace
 from typing import Callable, Sequence
