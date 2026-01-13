@@ -1,7 +1,7 @@
 """Time-stepping simulation of interacting electromagnetic sources."""
 
+from collections.abc import Callable, Sequence
 from dataclasses import replace
-from typing import Callable, Sequence
 
 import jax
 import jax.numpy as jnp

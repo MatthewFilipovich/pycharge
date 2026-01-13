@@ -1,6 +1,7 @@
 """Liénard-Wiechert potentials and electromagnetic fields from moving point charges."""
 
-from typing import Callable, Iterable, NamedTuple
+from collections.abc import Callable, Iterable
+from typing import NamedTuple
 
 import jax
 import jax.numpy as jnp

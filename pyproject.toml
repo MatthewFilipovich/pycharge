@@ -63,6 +63,10 @@ where = ["src"]
 [tool.ruff]
 line-length = 110
 
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4"]
+ignore = ["B905"]
+
 [tool.coverage.report]
 omit = ["tests/*"]
 exclude_lines = [

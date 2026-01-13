@@ -1,7 +1,7 @@
 """Point charge representation and solver configuration for electromagnetic simulations."""
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
 
 from scipy.constants import e
 

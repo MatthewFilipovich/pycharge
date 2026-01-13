@@ -116,9 +116,15 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 4))
 ts_fs = ts * 1e15  # Time in femtoseconds
 
 # Create titles with charge and position information
-d1_title = f"Dipole Charge 1 (q={-q_dipole / e:.0f}e)\n(x={dipole_origin[0] * 1e9:.1f} nm, y={dipole_origin[1] * 1e9:.1f} nm)"
-d2_title = f"Dipole Charge 2 (q={q_dipole / e:.0f}e)\n(x={dipole_origin[0] * 1e9:.1f} nm, y={dipole_origin[1] * 1e9:.1f} nm)"
-p_title = f"Free Particle (q={q_particle / e:.0f}e)\n(x={particle_position[0] * 1e9:.1f} nm, y={particle_position[1] * 1e9:.1f} nm)"
+
+
+def charge_title(label: str, q: float, pos: list) -> str:
+    return f"{label} (q={q / e:.0f}e)\n(x={pos[0] * 1e9:.1f} nm, y={pos[1] * 1e9:.1f} nm)"
+
+
+d1_title = charge_title("Dipole Charge 1", -q_dipole, dipole_origin)
+d2_title = charge_title("Dipole Charge 2", q_dipole, dipole_origin)
+p_title = charge_title("Free Particle", q_particle, particle_position)
 
 plot_z_position(axes[0], ts_fs, d1_z, "C0", d1_title)
 plot_z_position(axes[1], ts_fs, d2_z, "C1", d2_title)
