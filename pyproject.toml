@@ -12,6 +12,7 @@ requires-python = ">=3.10"
 classifiers = [
   "Intended Audience :: Education",
   "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
@@ -59,7 +60,10 @@ docs = [
   "sphinx-gallery",
   "sphinx-design",
   "matplotlib"
-]
+] 
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pycharge"]
 
 [tool.hatch.build]
 include = ["src/pycharge/py.typed"]
