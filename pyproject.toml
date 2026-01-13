@@ -1,19 +1,35 @@
 [build-system]
-requires = ["setuptools>=77.0.3", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.26", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "pycharge"
-version = "2.0.0"
+dynamic = ["version"]
+authors = [{name = "Matthew Filipovich", email = "matthew.filipovich@physics.ox.ac.uk"}]
+description = "Python library for differentiable electrodynamics simulations with jax."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
   "jax",
   "optimistix"
 ]
-requires-python = ">=3.10"
-authors = [{name = "Matthew Filipovich", email = "matthew.filipovich@physics.ox.ac.uk"}]
-description = "Python library for differentiable electrodynamics simulations with jax."
-readme = "README.md"
-license = {file = "LICENSE"}
 keywords = [
   "electrodynamics",
   "jax",
@@ -21,14 +37,12 @@ keywords = [
   "inverse design",
   "differentiable optics"
 ]
-classifiers = [
-  "Programming Language :: Python :: 3",
-  "Operating System :: OS Independent",
-  "Intended Audience :: Science/Research",
-  "Intended Audience :: Education",
-  "Topic :: Scientific/Engineering :: Physics",
-  "License :: OSI Approved :: MIT License"
-]
+
+[project.urls]
+Homepage = "https://github.com/MatthewFilipovich/pycharge"
+Documentation = "https://pycharge.readthedocs.io/"
+Tracker = "https://github.com/MatthewFilipovich/pycharge/issues"
+Changelog = "https://github.com/MatthewFilipovich/pycharge/releases"
 
 [project.optional-dependencies]
 dev = [
@@ -39,7 +53,6 @@ dev = [
   "ruff",
   "scipy"
 ]
-
 docs = [
   "sphinx-autoapi",
   "pydata-sphinx-theme",
@@ -47,18 +60,16 @@ docs = [
   "sphinx-gallery",
   "sphinx-design",
   "matplotlib"
-]
+] 
 
-[project.urls]
-Homepage = "https://github.com/MatthewFilipovich/pycharge"
-Documentation = "https://pycharge.readthedocs.io/"
-Tracker = "https://github.com/MatthewFilipovich/pycharge/issues"
+[tool.hatch.build.targets.wheel]
+packages = ["src/pycharge"]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.hatch.build]
+include = ["src/pycharge/py.typed"]
 
-[tool.setuptools.package-data]
-"pycharge" = ["py.typed"]
+[tool.hatch.version]
+source = "vcs"
 
 [tool.ruff]
 line-length = 110
