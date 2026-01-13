@@ -65,11 +65,7 @@ def test_source_time_moving(t_val):
     t_switch = R / v0  # where the physical branch switches
     t = jnp.array(t_val)
 
-    if t_val <= t_switch:  # Branch: R - v0 * tr >= 0  →  tr = (c * t - R) / (c - v0)
-        expected_tr = (c * t - R) / (c - v0)
-    else:  # Branch: R - v0 * tr < 0   →  tr = (c * t + R) / (c + v0)
-        expected_tr = (c * t + R) / (c + v0)
-
+    expected_tr = (c * t - R) / (c - v0) if t_val <= t_switch else (c * t + R) / (c + v0)
     tr = emission_time(r, t, charge)
     print(tr)
     assert jnp.allclose(tr, expected_tr)

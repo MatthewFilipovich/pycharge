@@ -1,7 +1,7 @@
 """Defines electromagnetic sources used in simulations."""
 
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Sequence
 
 import jax.numpy as jnp
 from scipy.constants import c, e, epsilon_0, m_e
