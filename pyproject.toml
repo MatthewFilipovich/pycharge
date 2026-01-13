@@ -62,12 +62,6 @@ docs = [
   "matplotlib"
 ] 
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/pycharge"]
-
-[tool.hatch.build]
-include = ["src/pycharge/py.typed"]
-
 [tool.hatch.version]
 source = "vcs"
 
